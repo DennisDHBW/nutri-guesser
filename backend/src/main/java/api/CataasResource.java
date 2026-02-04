@@ -24,6 +24,13 @@ public class CataasResource {
     }
 
     @GET
+    @Path("/api/score/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CataasResponseDTO getCatJsonScoreBased(@QueryParam("score") @DefaultValue("100") int score) {
+        return cataasService.fetchCatJsonScoreBased(score);
+    }
+
+    @GET
     @Path("/image")
     @Produces("image/*")
     public Response getCatImage(@QueryParam("tag") @DefaultValue("cute") String tag) {

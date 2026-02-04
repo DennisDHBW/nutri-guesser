@@ -29,8 +29,12 @@ public class CataasService {
     private static final int MAX_RETRIES = 2;
     private static final long RETRY_DELAY_MS = 250L;
     private static final String FALLBACK_IMAGE_CLASSPATH = "/static/default-cat.jpg";
+    @Inject
+    ScoreTagService scoreTagService;
 
-    public CataasResponseDTO getByTag(String tag) {
+    // Fetch cat JSON based on score-derived tag
+    public CataasResponseDTO fetchCatJsonScoreBased(int score) {
+        String tag = scoreTagService.determineTag(score);
         return fetchCatJson(tag);
     }
 
