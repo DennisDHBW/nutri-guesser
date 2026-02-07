@@ -13,6 +13,7 @@ public class NutritionFacts extends PanacheEntityBase {
     @Column(name = "KCAL_100G", nullable = false)
     public float kcal100g;
 
+    /*
     @Column(name = "FAT_100G")
     public float fat100g;
 
@@ -21,6 +22,7 @@ public class NutritionFacts extends PanacheEntityBase {
 
     @Column(name = "PROTEIN_100G")
     public float protein100g;
+     */
 
     @OneToOne
     @JoinColumn(name = "BARCODE")

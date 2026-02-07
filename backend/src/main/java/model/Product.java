@@ -19,4 +19,7 @@ public class Product extends PanacheEntityBase {
 
     @Column(name = "IMAGE_URL", length = 500)
     public String imageUrl;
+
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    public NutritionFacts nutritionFacts;
 }
