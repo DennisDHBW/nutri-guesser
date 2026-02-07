@@ -53,6 +53,7 @@ public class OpenFoodFactsService {
         product.barcode = productResponse.getCode();
         product.name = productResponse.getProduct().getProductName();
         product.brand = productResponse.getProduct().getBrands();
+        product.imageUrl = productResponse.getProduct().getImageUrl();
 
         NutritionFacts nutritionFacts;
         nutritionFacts = new NutritionFacts();
