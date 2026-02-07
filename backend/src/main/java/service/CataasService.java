@@ -9,7 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.logging.Logger;
@@ -27,6 +27,7 @@ public class CataasService {
 
     private static final Logger LOG = Logger.getLogger(CataasService.class.getName());
     private static final int MAX_RETRIES = 2;
+    private static final int MAX_ATTEMPTS = MAX_RETRIES + 1;
     private static final long RETRY_DELAY_MS = 250L;
     private static final String FALLBACK_IMAGE_CLASSPATH = "/static/default-cat.jpg";
     @Inject
@@ -35,12 +36,36 @@ public class CataasService {
     // Fetch cat JSON based on score-derived tag
     public CataasResponseDTO fetchCatJsonScoreBased(int score) {
         String tag = scoreTagService.determineTag(score);
-        return fetchCatJson(tag);
+        String text = scoreTagService.determineText(score);
+        return score % 2 == 0 ? fetchCatJson(tag) : fetchCatJsonWithText(tag, text);
+    }
+
+    // Fetch cat JSON with text
+    public CataasResponseDTO fetchCatJsonWithText(String tag, String text) {
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            try {
+                CataasResponseDTO dto = cataasClient.getCatByTagAndText(tag, text, true);
+                if (dto == null) throw new RuntimeException("Cataas returned null for tag: " + tag + " with text: " + text);
+                return normalize(dto);
+            } catch (Exception e) {
+                String msg = "Failed to fetch JSON with text from Cataas (attempt " + attempt + ") for tag '" + tag + "' and text '" + text + "': " + e.getMessage();
+                LOG.warning(msg);
+                if (attempt == MAX_RETRIES) {
+                    return fallbackCatJson(tag, e);
+                }
+                try {
+                    Thread.sleep(RETRY_DELAY_MS);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+        return fallbackCatJson(tag, new RuntimeException("unreachable"));
     }
 
     // Robust JSON fetch with simple retry and fallback
     public CataasResponseDTO fetchCatJson(String tag) {
-        for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             try {
                 CataasResponseDTO dto = cataasClient.getCatByTag(tag, true);
                 if (dto == null) throw new RuntimeException("Cataas returned null for tag: " + tag);
@@ -66,12 +91,12 @@ public class CataasService {
         CataasResponseDTO dto = fetchCatJson(tag);
         String urlPart = dto.url();
         String fullUrl = buildFullUrl(urlPart);
-        // If DTO provided no URL, try to call image endpoint directly
         if (fullUrl == null || fullUrl.isEmpty()) {
             fullUrl = buildFullUrl("/cat/" + tag);
         }
 
-        try (InputStream in = new URL(fullUrl).openStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        try (InputStream in = URI.create(fullUrl).toURL().openStream();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[8192];
             int read;
             while ((read = in.read(buffer)) != -1) {
@@ -80,6 +105,31 @@ public class CataasService {
             return out.toByteArray();
         } catch (Exception e) {
             String msg = "Failed to fetch image from '" + fullUrl + "': " + e.getMessage();
+            LOG.warning(msg);
+            return loadDefaultImageBytes();
+        }
+    }
+
+    // Fetch image bytes for a tag with text. Falls back to default image when remote fetch fails.
+    public byte[] fetchCatImageWithText(String tag, String text) {
+        CataasResponseDTO dto = fetchCatJsonWithText(tag, text);
+        String urlPart = dto.url();
+        String fullUrl = buildFullUrl(urlPart);
+        // If DTO provided no URL, try to call image endpoint directly
+        if (fullUrl == null || fullUrl.isEmpty()) {
+            fullUrl = buildFullUrl("/cat/" + tag + "/says/" + text);
+        }
+
+        try (InputStream in = URI.create(fullUrl).toURL().openStream();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            return out.toByteArray();
+        } catch (Exception e) {
+            String msg = "Failed to fetch image with text from '" + fullUrl + "': " + e.getMessage();
             LOG.warning(msg);
             return loadDefaultImageBytes();
         }

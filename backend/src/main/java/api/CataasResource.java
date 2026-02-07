@@ -1,5 +1,4 @@
 package api;
-
 import service.CataasService;
 import client.dto.CataasResponseDTO;
 import jakarta.inject.Inject;
@@ -20,7 +19,19 @@ public class CataasResource {
     @Produces(MediaType.APPLICATION_JSON)
     public CataasResponseDTO getCat(
             @QueryParam("tag") String tag,
-            @QueryParam("score") Integer score) {
+            @QueryParam("score") Integer score,
+            @QueryParam("text") String text) {
+
+        // always use text if provided
+        if (text != null && !text.isEmpty()) {
+            String effectiveTag = "cute";
+            if (score != null) {
+                effectiveTag = cataasService.fetchCatJsonScoreBased(score).tags().getFirst();
+            } else if (tag != null && !tag.isEmpty()) {
+                effectiveTag = tag;
+            }
+            return cataasService.fetchCatJsonWithText(effectiveTag, text);
+        }
 
         // score > tag > default
         if (score != null) {
@@ -37,7 +48,8 @@ public class CataasResource {
     @Produces("image/*")
     public Response getCatImage(
             @QueryParam("tag") String tag,
-            @QueryParam("score") Integer score) {
+            @QueryParam("score") Integer score,
+            @QueryParam("text") String text) {
 
         String effectiveTag = "cute";
         if (score != null) {
@@ -49,8 +61,17 @@ public class CataasResource {
             effectiveTag = tag;
         }
 
-        CataasResponseDTO dto = cataasService.fetchCatJson(effectiveTag);
-        byte[] data = cataasService.fetchCatImage(effectiveTag);
+        // use text if provided
+        byte[] data;
+        CataasResponseDTO dto;
+        if (text != null && !text.isEmpty()) {
+            dto = cataasService.fetchCatJsonWithText(effectiveTag, text);
+            data = cataasService.fetchCatImageWithText(effectiveTag, text);
+        } else {
+            dto = cataasService.fetchCatJson(effectiveTag);
+            data = cataasService.fetchCatImage(effectiveTag);
+        }
+
         String type = (dto != null && dto.mimetype() != null && dto.mimetype().startsWith("image/")) ? dto.mimetype() : "image/jpeg";
         return Response.ok(data).type(type).build();
     }

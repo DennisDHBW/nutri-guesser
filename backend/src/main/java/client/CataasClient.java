@@ -17,4 +17,12 @@ public interface CataasClient {
             @PathParam("tag") String tag,
             @QueryParam("json") boolean json
     );
+
+    @GET
+    @Path("/{tag}/says/{text}")
+    CataasResponseDTO getCatByTagAndText(
+            @PathParam("tag") String tag,
+            @PathParam("text") String text,
+            @QueryParam("json") boolean json
+    );
 }
