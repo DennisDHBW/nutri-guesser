@@ -1,6 +1,8 @@
-package service;
+package service.cataas;
 
 import jakarta.inject.Singleton;
+import lombok.Getter;
+
 import java.util.Random;
 import java.util.Arrays;
 import java.util.List;
@@ -14,6 +16,7 @@ public class ScoreTagService {
     int TIER_4_THRESHOLD = 5000;
 
     // Enum with Score-Tiers: Tags and  texts for each tier
+    @Getter
     enum ScoreTier {
         TIER_1(
                 Arrays.asList("sleep", "sleeping", "sleepy", "tired", "lazy", "bored", "grumpy", "sad", "nap", "lay", "bed", "blanket"),
@@ -44,13 +47,6 @@ public class ScoreTagService {
             this.texts = texts;
         }
 
-        public List<String> getTags() {
-            return tags;
-        }
-
-        public List<String> getTexts() {
-            return texts;
-        }
     }
 
     private final Random random = new Random();

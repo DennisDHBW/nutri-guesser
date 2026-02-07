@@ -1,6 +1,6 @@
-package api;
-import service.CataasService;
-import client.dto.CataasResponseDTO;
+package api.cataas;
+import service.cataas.CataasService;
+import client.cataas.dto.CataasResponseDTO;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;

@@ -1,6 +1,6 @@
-package client;
+package client.cataas;
 
-import client.dto.CataasResponseDTO;
+import client.cataas.dto.CataasResponseDTO;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
