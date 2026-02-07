@@ -1,4 +1,4 @@
-package dto;
+package client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

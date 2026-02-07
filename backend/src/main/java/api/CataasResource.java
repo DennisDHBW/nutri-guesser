@@ -1,7 +1,7 @@
 package api;
 
 import service.CataasService;
-import dto.CataasResponseDTO;
+import client.dto.CataasResponseDTO;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;

@@ -221,7 +221,7 @@ backend/
 │   │   │   │   └── CataasResource.java     # REST API Endpoints
 │   │   │   ├── client/
 │   │   │   │   └── CataasClient.java       # API Clients
-│   │   │   ├── dto/
+│   │   │   ├── client.dto/
 │   │   │   │   └── CataasResponseDTO.java  # Data Transfer Objects
 │   │   │   └── service/
 │   │   │       ├── CataasService.java      # Business Logic

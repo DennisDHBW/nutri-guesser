@@ -1,7 +1,7 @@
 package service;
 
 import client.CataasClient;
-import dto.CataasResponseDTO;
+import client.dto.CataasResponseDTO;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.inject.Inject;
