@@ -3,7 +3,6 @@ package api;
 import service.CataasService;
 import client.dto.CataasResponseDTO;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -19,23 +18,39 @@ public class CataasResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public CataasResponseDTO getCatJson(@QueryParam("tag") @DefaultValue("cute") String tag) {
-        return cataasService.fetchCatJson(tag);
-    }
+    public CataasResponseDTO getCat(
+            @QueryParam("tag") String tag,
+            @QueryParam("score") Integer score) {
 
-    @GET
-    @Path("/api/score/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public CataasResponseDTO getCatJsonScoreBased(@QueryParam("score") @DefaultValue("100") int score) {
-        return cataasService.fetchCatJsonScoreBased(score);
+        // score > tag > default
+        if (score != null) {
+            return cataasService.fetchCatJsonScoreBased(score);
+        } else if (tag != null && !tag.isEmpty()) {
+            return cataasService.fetchCatJson(tag);
+        } else {
+            return cataasService.fetchCatJson("cute");
+        }
     }
 
     @GET
     @Path("/image")
     @Produces("image/*")
-    public Response getCatImage(@QueryParam("tag") @DefaultValue("cute") String tag) {
-        CataasResponseDTO dto = cataasService.fetchCatJson(tag);
-        byte[] data = cataasService.fetchCatImage(tag);
+    public Response getCatImage(
+            @QueryParam("tag") String tag,
+            @QueryParam("score") Integer score) {
+
+        String effectiveTag = "cute";
+        if (score != null) {
+            CataasResponseDTO dto = cataasService.fetchCatJsonScoreBased(score);
+            if (dto != null && dto.tags() != null && !dto.tags().isEmpty()) {
+                effectiveTag = dto.tags().getFirst();
+            }
+        } else if (tag != null && !tag.isEmpty()) {
+            effectiveTag = tag;
+        }
+
+        CataasResponseDTO dto = cataasService.fetchCatJson(effectiveTag);
+        byte[] data = cataasService.fetchCatImage(effectiveTag);
         String type = (dto != null && dto.mimetype() != null && dto.mimetype().startsWith("image/")) ? dto.mimetype() : "image/jpeg";
         return Response.ok(data).type(type).build();
     }
