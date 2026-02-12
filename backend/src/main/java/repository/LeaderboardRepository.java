@@ -27,7 +27,7 @@ public class LeaderboardRepository implements PanacheRepositoryBase<LeaderboardE
         long betterScores = count("score > ?1", score);
         float percentile = (totalScores - betterScores - 1) * 100.0f / (totalScores - 1);
 
-        return Math.max(0, Math.min(100, percentile));
+        return Math.max(0, Math.min(100, Math.round(percentile * 100) / 100.0f));
     }
 
 }

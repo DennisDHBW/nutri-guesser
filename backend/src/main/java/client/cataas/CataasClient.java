@@ -23,6 +23,10 @@ public interface CataasClient {
     CataasResponse getCatByTagAndText(
             @PathParam("tag") String tag,
             @PathParam("text") String text,
-            @QueryParam("json") boolean json
+            @QueryParam("json") boolean json,
+            @QueryParam("fontSize") Integer fontSize,
+            @QueryParam("fontColor") String fontColor,
+            @QueryParam("width") Integer width,
+            @QueryParam("height") Integer height
     );
 }

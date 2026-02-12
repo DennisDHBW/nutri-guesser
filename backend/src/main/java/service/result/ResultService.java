@@ -4,16 +4,19 @@ import client.cataas.CataasClient;
 import client.cataas.dto.CataasResponse;
 import lombok.Getter;
 import model.GameSession;
+import model.LeaderboardEntry;
 import model.Round;
 import repository.*;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.inject.Inject;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -49,22 +52,43 @@ public class ResultService {
     private static final float TIER5_THRESHOLD = 90.0f;
 
     private String[] getTagAndTextForSession(UUID sessionId) {
+
+        if (sessionId == null) {
+            throw new IllegalArgumentException("Session ID must be provided");
+        }
+
         long totalPoints = calculateTotalScore(sessionId);
         float percentile = leaderboardRepository.calculatePercentile(totalPoints);
         long placement = leaderboardRepository.getPredictedPlacement(totalPoints);
         ResultTier resultTier = getResultTier(percentile);
-        String tag = getResultTagForPercentile(resultTier);
-        String text = getCataasTextForPercentile(resultTier);
-        text = text + " | placement: " + placement + " (better than " + percentile + "% of players)";
-        text = text + "?fontSize=30&fontColor=red";
-        return new     String[]{tag, text};
+        String tag = getCataasTagForPercentile(resultTier);
+        
+        // Concat text
+        String text = getCataasTextForPercentile(resultTier) + "\nplacement: " + placement;
+        if(percentile >= 0.01f) {
+            text = text + " (" + percentile + "%)";
+        };
+
+        // Persist leaderboard entry
+        LeaderboardEntry entry = new LeaderboardEntry();
+        entry.entryId = UUID.randomUUID();
+        entry.session = gameSessionRepository.findById(sessionId);
+        entry.score = (int) totalPoints;
+        entry.achievedAt = LocalDateTime.now();
+        entry.rank = (int) placement;
+        entry.player = entry.session.player;
+        leaderboardRepository.persist(entry);
+
+        return new String[]{tag, text};
     }
 
+    @Transactional
     public CataasResponse fetchCatJsonForSession(UUID sessionId) {
         String[] tagAndText = getTagAndTextForSession(sessionId);
         return fetchCatJsonWithText(tagAndText[0], tagAndText[1]);
     }
 
+    @Transactional
     public byte[]  fetchCatImageForSession(UUID sessionId) {
         String[] tagAndText = getTagAndTextForSession(sessionId);
         return fetchCatImageWithText(tagAndText[0], tagAndText[1]);
@@ -74,7 +98,14 @@ public class ResultService {
     public CataasResponse fetchCatJsonWithText(String tag, String text) {
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             try {
-                CataasResponse dto = cataasClient.getCatByTagAndText(tag, text, true);
+                CataasResponse dto = cataasClient.getCatByTagAndText(
+                        tag,
+                        text,
+                        true,
+                        30,
+                        "red",
+                        800,
+                        800);
                 if (dto == null) throw new RuntimeException("Cataas returned null for tag: " + tag + " with text: " + text);
                 return normalize(dto);
             } catch (Exception e) {
@@ -229,7 +260,7 @@ public class ResultService {
                 .sum();
     }
 
-    private String getResultTagForPercentile(ResultTier resultTier) {
+    private String getCataasTagForPercentile(ResultTier resultTier) {
         List<String> tierTags = resultTier.getTags();
         int randomIndex = random.nextInt(tierTags.size());
         return tierTags.get(randomIndex);
