@@ -9,8 +9,6 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class GameSessionRepository implements PanacheRepositoryBase<GameSession, UUID> {
-
-    // Beispiel: Alle Spiele eines Spielers finden, sortiert nach Datum
     public List<GameSession> listByPlayer(Player player) {
         return list("player", "startedAt", player);
     }

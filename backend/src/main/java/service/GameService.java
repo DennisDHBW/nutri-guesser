@@ -24,16 +24,13 @@ public class GameService {
     public void addProductWithNutrition(String barcode, String name, String brand,
                                         float kcal, double fat, double carbs, double protein) {
 
-        // 1. Produkt-Entität erstellen und persistieren
         Product product = new Product();
         product.barcode = barcode;
         product.name = name;
         product.brand = brand;
         productRepository.persist(product);
 
-        // 2. NutritionFacts-Entität erstellen
         NutritionFacts facts = new NutritionFacts();
-        // Dank @MapsId in der Entity wird der Barcode automatisch vom Produkt übernommen
         facts.product = product;
         facts.kcal100g = kcal;
 

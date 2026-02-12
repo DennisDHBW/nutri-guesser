@@ -10,7 +10,6 @@ import java.util.UUID;
 @ApplicationScoped
 public class RoundRepository implements PanacheRepositoryBase<Round, UUID> {
 
-    // Findet alle Runden einer bestimmten Spielsitzung
     public List<Round> listBySession(GameSession session) {
         return list("session", session);
     }
