@@ -1,0 +1,121 @@
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.home-container {
+  max-width: 800px;
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.title {
+  font-size: 3rem;
+  color: #667eea;
+  margin-bottom: 10px;
+}
+.subtitle {
+  font-size: 1.2rem;
+  color: #666;
+}
+.start-button {
+  width: 100%;
+  padding: 16px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 40px;
+}
+.start-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+.leaderboard-section {
+  margin-top: 30px;
+}
+.leaderboard-title {
+  font-size: 1.8rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.leaderboard-container {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.leaderboard-container::-webkit-scrollbar {
+  width: 8px;
+}
+.leaderboard-container::-webkit-scrollbar-track {
+  background: #e9ecef;
+  border-radius: 4px;
+}
+.leaderboard-container::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 4px;
+}
+.loading,
+.empty {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+}
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.leaderboard-entry {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+.leaderboard-entry:hover {
+  transform: translateX(5px);
+}
+.leaderboard-entry.rank-1 {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  font-weight: 600;
+}
+.leaderboard-entry.rank-2 {
+  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+  font-weight: 600;
+}
+.leaderboard-entry.rank-3 {
+  background: linear-gradient(135deg, #cd7f32 0%, #e8a87c 100%);
+  font-weight: 600;
+}
+.rank {
+  font-size: 1.5rem;
+  min-width: 40px;
+  text-align: center;
+}
+.player-name {
+  flex: 1;
+  font-size: 1.1rem;
+}
+.score {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #667eea;
+}
