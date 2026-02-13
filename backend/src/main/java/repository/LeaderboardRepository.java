@@ -9,8 +9,29 @@ import java.util.UUID;
 @ApplicationScoped
 public class LeaderboardRepository implements PanacheRepositoryBase<LeaderboardEntry, UUID> {
 
-    // Die eigentliche "Highscore"-Abfrage
     public List<LeaderboardEntry> findTopScores(int limit) {
         return find("order by score desc").page(0, limit).list();
     }
+
+    public List<LeaderboardEntry> findTopEntries(int limit) {
+        return find("order by rank asc").page(0, limit).list();
+    }
+
+    public Integer getPredictedPlacement(Long score) {
+        Long count = count("score > ?1", score);
+        return count.intValue() + 1;
+    }
+
+    public Float calculatePercentile(Long score) {
+        long totalScores = count();
+        if (totalScores <= 1) {
+            return 100.0f;
+        }
+
+        long betterScores = count("score > ?1", score);
+        float percentile = (totalScores - betterScores - 1) * 100.0f / (totalScores - 1);
+
+        return Math.max(0, Math.min(100, Math.round(percentile * 100) / 100.0f));
+    }
+
 }

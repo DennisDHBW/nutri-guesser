@@ -1,5 +1,16 @@
 # Projektübersicht: Web-Services Gruppenarbeit - "NutriGuesser"
 
+Backend starten:
+cd backend
+./mvnw quarkus:dev
+
+Frontend starten:
+cd frontend
+npm install
+npm run dev
+
+---
+
 ## 1. Administrative Informationen
 * **Modul:** Web-Services (Prüfungsleistung)
 * **Studiengang:** Angewandte Informatik
@@ -221,7 +232,7 @@ backend/
 │   │   │   │   └── CataasResource.java     # REST API Endpoints
 │   │   │   ├── client/
 │   │   │   │   └── CataasClient.java       # API Clients
-│   │   │   ├── client.dto/
+│   │   │   ├── client.cataas.dto/
 │   │   │   │   └── CataasResponseDTO.java  # Data Transfer Objects
 │   │   │   └── service/
 │   │   │       ├── CataasService.java      # Business Logic
