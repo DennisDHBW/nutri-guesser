@@ -40,4 +40,8 @@ public class GameService {
     public Optional<NutritionFacts> getNutritionFacts(String barcode) {
         return nutritionFactsRepository.findByIdOptional(barcode);
     }
+
+    public Product getRandomProduct() {
+        return productRepository.findRandomFromDb();
+    }
 }

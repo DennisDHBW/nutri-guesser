@@ -13,6 +13,10 @@ public class LeaderboardRepository implements PanacheRepositoryBase<LeaderboardE
         return find("order by score desc").page(0, limit).list();
     }
 
+    public List<LeaderboardEntry> findTopEntries(int limit) {
+        return find("order by rank asc").page(0, limit).list();
+    }
+
     public Integer getPredictedPlacement(Long score) {
         Long count = count("score > ?1", score);
         return count.intValue() + 1;

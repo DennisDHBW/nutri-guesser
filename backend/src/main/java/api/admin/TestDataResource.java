@@ -44,8 +44,7 @@ public class TestDataResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response loadTestData(
             @QueryParam("files") String files,
-            @QueryParam("clear") @DefaultValue("false") boolean clear,
-            @QueryParam("loadTestData") @DefaultValue("true") boolean loadTestData
+            @QueryParam("clear") @DefaultValue("false") boolean clear
     ) {
         List<String> resources = resolveResources(files);
         int executed = 0;
@@ -59,10 +58,8 @@ public class TestDataResource {
                     clearTables(connection);
                 }
 
-                if (loadTestData) {
-                    for (String resource : resources) {
-                        executed += executeSqlResource(connection, resource);
-                    }
+                for (String resource : resources) {
+                    executed += executeSqlResource(connection, resource);
                 }
 
                 connection.commit();
@@ -88,10 +85,9 @@ public class TestDataResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response loadTestDataGet(
             @QueryParam("files") String files,
-            @QueryParam("clear") @DefaultValue("false") boolean clear,
-            @QueryParam("loadTestData") @DefaultValue("true") boolean loadTestData
+            @QueryParam("clear") @DefaultValue("false") boolean clear
     ) {
-        return loadTestData(files, clear, loadTestData);
+        return loadTestData(files, clear);
     }
 
     private List<String> resolveResources(String files) {
