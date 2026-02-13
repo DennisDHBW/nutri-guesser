@@ -1,0 +1,132 @@
+.round-history {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #e9ecef;
+}
+.round-history h3 {
+  color: #333;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+}
+.rounds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+.rounds-list::-webkit-scrollbar {
+  width: 6px;
+}
+.rounds-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.rounds-list::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 3px;
+}
+.round-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 80px 40px;
+  gap: 15px;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #e9ecef;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.round-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.round-item.correct {
+  border-left-color: #28a745;
+  background: #f0fff4;
+}
+.round-item.incorrect {
+  border-left-color: #dc3545;
+  background: #fff5f5;
+}
+.round-number {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #666;
+  text-align: center;
+}
+.round-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.product-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+.calories-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+.info-row {
+  display: flex;
+  gap: 8px;
+}
+.info-row .label {
+  color: #666;
+  min-width: 90px;
+}
+.info-row .value {
+  font-weight: 600;
+}
+.info-row .value.actual {
+  color: #667eea;
+}
+.info-row .value.guess {
+  color: #764ba2;
+}
+.round-points {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #667eea;
+  text-align: center;
+}
+.correct-badge,
+.incorrect-badge {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.correct-badge {
+  background: #28a745;
+  color: white;
+}
+.incorrect-badge {
+  background: #dc3545;
+  color: white;
+}
+@media (max-width: 768px) {
+  .round-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .round-number {
+    text-align: left;
+  }
+  .correct-badge,
+  .incorrect-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+}
