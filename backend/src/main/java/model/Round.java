@@ -22,12 +22,15 @@ public class Round extends PanacheEntityBase {
     @JoinColumn(name = "BARCODE", nullable = false)
     public Product product; // [cite: 97]
 
-    @Column(name = "GUESSED_RANGE")
-    public String guessedRange; //
+    @Column(name = "GUESSED_MIN")
+    public Integer guessedMin; //
+
+    @Column(name = "GUESSED_MAX")
+    public Integer guessedMax; //
 
     @Column(name = "ACTUAL_KCAL")
     public Integer actualKcal; //
 
     @Column(name = "POINTS")
-    public Integer points; //
+    public Integer points = null; //
 }
