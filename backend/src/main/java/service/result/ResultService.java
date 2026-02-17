@@ -2,6 +2,7 @@ package service.result;
 
 import client.cataas.CataasClient;
 import client.cataas.dto.CataasResponse;
+import api.result.dto.ResultResponseDTO;
 import lombok.Getter;
 import model.GameSession;
 import model.LeaderboardEntry;
@@ -44,7 +45,7 @@ public class ResultService {
     private static final int MAX_RETRIES = 2;
     private static final int MAX_ATTEMPTS = MAX_RETRIES + 1;
     private static final long RETRY_DELAY_MS = 250L;
-    private static final String FALLBACK_IMAGE_CLASSPATH = "/static/default-cat.jpg";
+    private static final String FALLBACK_IMAGE_CLASSPATH = "/static/default-cat.svg";
 
     private static final float TIER2_THRESHOLD = 25.0f;
     private static final float TIER3_THRESHOLD = 50.0f;
@@ -64,20 +65,27 @@ public class ResultService {
         String tag = getCataasTagForPercentile(resultTier);
         
         // Concat text
+        /*
         String text = getCataasTextForPercentile(resultTier) + "\nplacement: " + placement;
         if(percentile >= 0.01f) {
             text = text + " (" + percentile + "%)";
-        };
+        }*/
+        String text = getCataasTextForPercentile(resultTier);
 
-        // Persist leaderboard entry
-        LeaderboardEntry entry = new LeaderboardEntry();
-        entry.entryId = UUID.randomUUID();
-        entry.session = gameSessionRepository.findById(sessionId);
-        entry.score = (int) totalPoints;
-        entry.achievedAt = LocalDateTime.now();
-        entry.rank = (int) placement;
-        entry.player = entry.session.player;
-        leaderboardRepository.persist(entry);
+        if(totalPoints > 0) {
+            GameSession session = gameSessionRepository.findById(sessionId);
+            if (session != null && leaderboardRepository.findBySession(session) == null) {
+                // Persist leaderboard entry once per session
+                LeaderboardEntry entry = new LeaderboardEntry();
+                entry.entryId = UUID.randomUUID();
+                entry.session = session;
+                entry.score = (int) totalPoints;
+                entry.achievedAt = LocalDateTime.now();
+                entry.rank = (int) placement;
+                entry.player = session.player;
+                leaderboardRepository.persist(entry);
+            }
+        }
 
         return new String[]{tag, text};
     }
@@ -94,6 +102,30 @@ public class ResultService {
         return fetchCatImageWithText(tagAndText[0], tagAndText[1]);
     }
 
+    @Transactional
+    public ResultResponseDTO fetchResultResponseForSession(UUID sessionId) {
+        String[] tagAndText = getTagAndTextForSession(sessionId);
+        CataasResponse catResponse = fetchCatJsonWithText(tagAndText[0], tagAndText[1]);
+
+        // Hole Rang und Gesamtpunktzahl
+        GameSession session = gameSessionRepository.findById(sessionId);
+        Integer totalScore = calculateTotalScore(sessionId);
+        LeaderboardEntry entry = leaderboardRepository.findBySession(session);
+        Integer rank = entry != null ? entry.rank : null;
+        Float betterThanPercentage = leaderboardRepository.calculatePercentile(totalScore.longValue());
+
+        return new ResultResponseDTO(
+                catResponse.id(),
+                catResponse.tags(),
+                catResponse.createdAt(),
+                catResponse.url(),
+                catResponse.mimetype(),
+                rank,
+                totalScore,
+                betterThanPercentage
+        );
+    }
+
     // Fetch cat JSON with text
     public CataasResponse fetchCatJsonWithText(String tag, String text) {
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
@@ -102,7 +134,7 @@ public class ResultService {
                         tag,
                         text,
                         true,
-                        30,
+                        50,
                         "red",
                         800,
                         800);
@@ -172,7 +204,7 @@ public class ResultService {
                 List.of("fallback"),
                 Instant.now().toString(),
                 FALLBACK_IMAGE_CLASSPATH,
-                "image/jpeg"
+                "image/svg+xml"
         );
     }
 

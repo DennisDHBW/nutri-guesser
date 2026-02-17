@@ -162,7 +162,8 @@ public class GameResource {
         round.roundId = UUID.randomUUID();
         round.session = session;
         round.product = product;
-        round.guessedRange = request.minCalories + "-" + request.maxCalories;
+        round.guessedMin = request.minCalories;
+        round.guessedMax = request.maxCalories;
         round.actualKcal = actualCalories;
         round.points = points;
         round.roundNumber = (int) roundRepository.count("session = ?1", session) + 1;
@@ -219,8 +220,3 @@ public class GameResource {
         public String message;
     }
 }
-
-
-
-
-
