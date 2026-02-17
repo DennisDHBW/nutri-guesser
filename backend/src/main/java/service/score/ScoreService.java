@@ -9,6 +9,8 @@ import model.Round;
 import repository.NutritionFactsRepository;
 import repository.RoundRepository;
 
+import java.util.UUID;
+
 import static java.lang.Math.exp;
 
 @ApplicationScoped
@@ -55,7 +57,13 @@ public class ScoreService {
 
         round.points = finalScore;
 
+        boolean isLastRound = numRounds(round.session.sessionId);
+
         // Due to @Transactional round is persisted automatically.
-        return new ScoreResponse(round.points, round.actualKcal);
+        return new ScoreResponse(round.points, round.actualKcal, isLastRound);
+    }
+
+    private boolean numRounds(UUID sessionId) {
+        return roundRepository.count("session.sessionId", sessionId) >= 5;
     }
 }
