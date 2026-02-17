@@ -1,5 +1,6 @@
 package api.result;
 import service.result.ResultService;
+import api.result.dto.ResultResponseDTO;
 import client.cataas.dto.CataasResponse;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -7,7 +8,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;import java.util.UUID;
+import jakarta.ws.rs.core.Response;
+import java.util.UUID;
 
 @Path("/api/result")
 public class ResultResource {
@@ -16,6 +18,14 @@ public class ResultResource {
     ResultService resultService;
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public ResultResponseDTO getResultResponse(
+            @QueryParam("sessionId") UUID sessionId) {
+        return resultService.fetchResultResponseForSession(sessionId);
+    }
+
+    @GET
+    @Path("/cat")
     @Produces(MediaType.APPLICATION_JSON)
     public CataasResponse getCat(
             @QueryParam("sessionId") UUID sessionId) {

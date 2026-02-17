@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import RoundHistory from '../components/RoundHistory';
@@ -32,6 +32,18 @@ function ResultPage() {
     navigate('/');
   };
 
+  const catImageUrl = useMemo(() => {
+    if (sessionId) {
+      return `/api/result/image?sessionId=${sessionId}`;
+    }
+    if (!result?.url) return null;
+    if (result.url.startsWith('http://') || result.url.startsWith('https://')) {
+      return result.url;
+    }
+    const base = 'https://cataas.com';
+    return `${base}${result.url.startsWith('/') ? '' : '/'}${result.url}`;
+  }, [result, sessionId]);
+
   if (loading) {
     return (
       <div className="result-page">
@@ -61,19 +73,16 @@ function ResultPage() {
         <h1 className="result-title">Spiel beendet! 🎉</h1>
 
         {/* Katzen-Bild von Cataas */}
-        {result?.catImageUrl && (
+        {catImageUrl && (
           <div className="cat-image-container">
             <img
-              src={result.catImageUrl}
+              src={catImageUrl}
               alt="Cat result"
               className="cat-image"
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
             />
-            {result.catText && (
-              <div className="cat-text">{result.catText}</div>
-            )}
           </div>
         )}
 
@@ -93,12 +102,12 @@ function ResultPage() {
         )}
 
         {/* Platzierung im Leaderboard */}
-        {result?.leaderboardRank && (
+        {result?.rank && (
           <div className="leaderboard-rank">
             <p>
-              {result.leaderboardRank <= 10
-                ? `🏆 Du bist auf Platz ${result.leaderboardRank} im Leaderboard!`
-                : `Du hast es nicht in die Top 10 geschafft. Versuche es nochmal!`
+              {result.rank <= 10
+                ? `🏆 Du bist auf Platz ${result.rank} im Leaderboard!`
+                : 'Du hast es nicht in die Top 10 geschafft. Versuche es nochmal!'
               }
             </p>
           </div>
@@ -115,4 +124,3 @@ function ResultPage() {
 }
 
 export default ResultPage;
-

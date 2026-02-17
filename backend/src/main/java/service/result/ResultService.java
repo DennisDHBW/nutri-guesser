@@ -2,6 +2,7 @@ package service.result;
 
 import client.cataas.CataasClient;
 import client.cataas.dto.CataasResponse;
+import api.result.dto.ResultResponseDTO;
 import lombok.Getter;
 import model.GameSession;
 import model.LeaderboardEntry;
@@ -67,7 +68,7 @@ public class ResultService {
         String text = getCataasTextForPercentile(resultTier) + "\nplacement: " + placement;
         if(percentile >= 0.01f) {
             text = text + " (" + percentile + "%)";
-        };
+        }
 
         // Persist leaderboard entry
         LeaderboardEntry entry = new LeaderboardEntry();
@@ -92,6 +93,28 @@ public class ResultService {
     public byte[]  fetchCatImageForSession(UUID sessionId) {
         String[] tagAndText = getTagAndTextForSession(sessionId);
         return fetchCatImageWithText(tagAndText[0], tagAndText[1]);
+    }
+
+    @Transactional
+    public ResultResponseDTO fetchResultResponseForSession(UUID sessionId) {
+        String[] tagAndText = getTagAndTextForSession(sessionId);
+        CataasResponse catResponse = fetchCatJsonWithText(tagAndText[0], tagAndText[1]);
+
+        // Hole Rang und Gesamtpunktzahl
+        GameSession session = gameSessionRepository.findById(sessionId);
+        Integer totalScore = calculateTotalScore(sessionId);
+        LeaderboardEntry entry = leaderboardRepository.findBySession(session);
+        Integer rank = entry != null ? entry.rank : null;
+
+        return new ResultResponseDTO(
+                catResponse.id(),
+                catResponse.tags(),
+                catResponse.createdAt(),
+                catResponse.url(),
+                catResponse.mimetype(),
+                rank,
+                totalScore
+        );
     }
 
     // Fetch cat JSON with text
