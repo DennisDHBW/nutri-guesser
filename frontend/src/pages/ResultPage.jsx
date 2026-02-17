@@ -44,6 +44,16 @@ function ResultPage() {
     return `${base}${result.url.startsWith('/') ? '' : '/'}${result.url}`;
   }, [result, sessionId]);
 
+  const formattedBetterThan = useMemo(() => {
+    if (result?.betterThanPercentage == null || Number.isNaN(Number(result.betterThanPercentage))) {
+      return null;
+    }
+    return Number(result.betterThanPercentage).toLocaleString('de-DE', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    });
+  }, [result]);
+
   if (loading) {
     return (
       <div className="result-page">
@@ -86,6 +96,19 @@ function ResultPage() {
           </div>
         )}
 
+        {(result?.rank != null || formattedBetterThan != null) && (
+          <div className="result-placement">
+            {result?.rank != null && (
+              <div className="placement-text">Platzierung: {result.rank}</div>
+            )}
+            {formattedBetterThan != null && (
+              <div className="placement-text">
+                Besser als: {formattedBetterThan}%
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Gesamtpunktzahl */}
         <div className="total-score-section">
           <h2>Deine Punktzahl</h2>
@@ -102,7 +125,7 @@ function ResultPage() {
         )}
 
         {/* Platzierung im Leaderboard */}
-        {result?.rank && (
+        {result?.rank != null && (
           <div className="leaderboard-rank">
             <p>
               {result.rank <= 10
@@ -124,3 +147,4 @@ function ResultPage() {
 }
 
 export default ResultPage;
+

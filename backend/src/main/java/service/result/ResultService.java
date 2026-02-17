@@ -45,7 +45,7 @@ public class ResultService {
     private static final int MAX_RETRIES = 2;
     private static final int MAX_ATTEMPTS = MAX_RETRIES + 1;
     private static final long RETRY_DELAY_MS = 250L;
-    private static final String FALLBACK_IMAGE_CLASSPATH = "/static/default-cat.jpg";
+    private static final String FALLBACK_IMAGE_CLASSPATH = "/static/default-cat.svg";
 
     private static final float TIER2_THRESHOLD = 25.0f;
     private static final float TIER3_THRESHOLD = 50.0f;
@@ -105,6 +105,7 @@ public class ResultService {
         Integer totalScore = calculateTotalScore(sessionId);
         LeaderboardEntry entry = leaderboardRepository.findBySession(session);
         Integer rank = entry != null ? entry.rank : null;
+        Float betterThanPercentage = leaderboardRepository.calculatePercentile(totalScore.longValue());
 
         return new ResultResponseDTO(
                 catResponse.id(),
@@ -113,7 +114,8 @@ public class ResultService {
                 catResponse.url(),
                 catResponse.mimetype(),
                 rank,
-                totalScore
+                totalScore,
+                betterThanPercentage
         );
     }
 
@@ -195,7 +197,7 @@ public class ResultService {
                 List.of("fallback"),
                 Instant.now().toString(),
                 FALLBACK_IMAGE_CLASSPATH,
-                "image/jpeg"
+                "image/svg+xml"
         );
     }
 

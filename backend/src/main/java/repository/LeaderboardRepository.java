@@ -10,12 +10,8 @@ import java.util.UUID;
 @ApplicationScoped
 public class LeaderboardRepository implements PanacheRepositoryBase<LeaderboardEntry, UUID> {
 
-    public List<LeaderboardEntry> findTopScores(int limit) {
-        return find("order by score desc").page(0, limit).list();
-    }
-
     public List<LeaderboardEntry> findTopEntries(int limit) {
-        return find("order by rank asc").page(0, limit).list();
+        return find("order by score desc").page(0, limit).list();
     }
 
     public Integer getPredictedPlacement(Long score) {

@@ -10,6 +10,6 @@ public record ResultResponseDTO(
         String url,
         String mimetype,
         Integer rank,
-        Integer totalScore
+        Integer totalScore,
+        Float betterThanPercentage
 ) {}
-
