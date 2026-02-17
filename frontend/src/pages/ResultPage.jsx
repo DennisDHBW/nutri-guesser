@@ -32,17 +32,29 @@ function ResultPage() {
     navigate('/');
   };
 
-  const catImageUrl = useMemo(() => {
-    if (sessionId) {
-      return `/api/result/image?sessionId=${sessionId}`;
-    }
+  const normalizedResultUrl = useMemo(() => {
     if (!result?.url) return null;
     if (result.url.startsWith('http://') || result.url.startsWith('https://')) {
       return result.url;
     }
     const base = 'https://cataas.com';
     return `${base}${result.url.startsWith('/') ? '' : '/'}${result.url}`;
-  }, [result, sessionId]);
+  }, [result]);
+
+  const catImageUrl = useMemo(() => {
+    if (sessionId) {
+      return `/api/result/image?sessionId=${sessionId}`;
+    }
+    return normalizedResultUrl;
+  }, [normalizedResultUrl, sessionId]);
+
+  const [imageSrc, setImageSrc] = useState(catImageUrl);
+  const [imageLoading, setImageLoading] = useState(Boolean(catImageUrl));
+
+  useEffect(() => {
+    setImageSrc(catImageUrl);
+    setImageLoading(Boolean(catImageUrl));
+  }, [catImageUrl]);
 
   const formattedBetterThan = useMemo(() => {
     if (result?.betterThanPercentage == null || Number.isNaN(Number(result.betterThanPercentage))) {
@@ -85,15 +97,33 @@ function ResultPage() {
         {/* Katzen-Bild von Cataas */}
         {catImageUrl && (
           <div className="cat-image-container">
-            <img
-              src={catImageUrl}
-              alt="Cat result"
-              className="cat-image"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
+            {imageLoading && (
+              <div className="cat-image-loading">
+                <div className="spinner"></div>
+                <span>Bild wird geladen…</span>
+              </div>
+            )}
+            {imageSrc && (
+              <img
+                src={imageSrc}
+                alt="Cat result"
+                className="cat-image"
+                onLoad={() => setImageLoading(false)}
+                onError={() => {
+                  if (imageSrc && normalizedResultUrl && imageSrc !== normalizedResultUrl) {
+                    setImageSrc(normalizedResultUrl);
+                    setImageLoading(true);
+                    return;
+                  }
+                  setImageLoading(false);
+                  setImageSrc(null);
+                }}
+              />
+            )}
           </div>
+        )}
+        {!imageLoading && imageSrc == null && (
+          <div className="cat-image-fallback">Katzenbild konnte nicht geladen werden.</div>
         )}
 
         {(result?.rank != null || formattedBetterThan != null) && (

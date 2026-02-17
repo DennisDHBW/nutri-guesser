@@ -65,20 +65,27 @@ public class ResultService {
         String tag = getCataasTagForPercentile(resultTier);
         
         // Concat text
+        /*
         String text = getCataasTextForPercentile(resultTier) + "\nplacement: " + placement;
         if(percentile >= 0.01f) {
             text = text + " (" + percentile + "%)";
-        }
+        }*/
+        String text = getCataasTextForPercentile(resultTier);
 
-        // Persist leaderboard entry
-        LeaderboardEntry entry = new LeaderboardEntry();
-        entry.entryId = UUID.randomUUID();
-        entry.session = gameSessionRepository.findById(sessionId);
-        entry.score = (int) totalPoints;
-        entry.achievedAt = LocalDateTime.now();
-        entry.rank = (int) placement;
-        entry.player = entry.session.player;
-        leaderboardRepository.persist(entry);
+        if(totalPoints > 0) {
+            GameSession session = gameSessionRepository.findById(sessionId);
+            if (session != null && leaderboardRepository.findBySession(session) == null) {
+                // Persist leaderboard entry once per session
+                LeaderboardEntry entry = new LeaderboardEntry();
+                entry.entryId = UUID.randomUUID();
+                entry.session = session;
+                entry.score = (int) totalPoints;
+                entry.achievedAt = LocalDateTime.now();
+                entry.rank = (int) placement;
+                entry.player = session.player;
+                leaderboardRepository.persist(entry);
+            }
+        }
 
         return new String[]{tag, text};
     }
@@ -127,7 +134,7 @@ public class ResultService {
                         tag,
                         text,
                         true,
-                        30,
+                        50,
                         "red",
                         800,
                         800);

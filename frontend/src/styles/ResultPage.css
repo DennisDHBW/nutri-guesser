@@ -24,12 +24,34 @@
   margin-bottom: 20px;
 }
 .cat-image {
+  display: block;
   width: 100%;
-  max-width: 560px;
-  max-height: 420px;
+  max-width: 640px;
+  height: auto;
+  max-height: none;
   object-fit: contain;
   border-radius: 16px;
+  background: #fff;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  margin: 0 auto;
+}
+.cat-image-fallback {
+  text-align: center;
+  margin: 10px auto 20px;
+  color: #777;
+  font-size: 0.95rem;
+}
+.cat-image-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin: 0 auto 12px;
+  background: #f5f6ff;
+  color: #4a4f9c;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 .cat-text {
   margin-top: 15px;
