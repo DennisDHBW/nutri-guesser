@@ -33,8 +33,3 @@ public class GameResource {
         return gameService.nextRound(sessionId);
     }
 }
-
-
-
-
-

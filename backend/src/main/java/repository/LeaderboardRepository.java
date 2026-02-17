@@ -3,18 +3,15 @@ package repository;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import model.LeaderboardEntry;
+import model.GameSession;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
 public class LeaderboardRepository implements PanacheRepositoryBase<LeaderboardEntry, UUID> {
 
-    public List<LeaderboardEntry> findTopScores(int limit) {
-        return find("order by score desc").page(0, limit).list();
-    }
-
     public List<LeaderboardEntry> findTopEntries(int limit) {
-        return find("order by rank asc").page(0, limit).list();
+        return find("order by score desc").page(0, limit).list();
     }
 
     public Integer getPredictedPlacement(Long score) {
@@ -32,6 +29,10 @@ public class LeaderboardRepository implements PanacheRepositoryBase<LeaderboardE
         float percentile = (totalScores - betterScores - 1) * 100.0f / (totalScores - 1);
 
         return Math.max(0, Math.min(100, Math.round(percentile * 100) / 100.0f));
+    }
+
+    public LeaderboardEntry findBySession(GameSession session) {
+        return find("session = ?1", session).firstResult();
     }
 
 }
