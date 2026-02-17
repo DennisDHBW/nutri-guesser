@@ -18,7 +18,7 @@ function ResultPage() {
       setResult(data);
     } catch (err) {
       console.error('Error loading result:', err);
-      setError('Fehler beim Laden des Ergebnisses');
+      setError('Failed to load result');
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ function ResultPage() {
     if (result?.betterThanPercentage == null || Number.isNaN(Number(result.betterThanPercentage))) {
       return null;
     }
-    return Number(result.betterThanPercentage).toLocaleString('de-DE', {
+    return Number(result.betterThanPercentage).toLocaleString('en-US', {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1
     });
@@ -71,7 +71,7 @@ function ResultPage() {
       <div className="result-page">
         <div className="loading-container">
           <div className="spinner"></div>
-          <p>Lade Ergebnis...</p>
+          <p>Loading result...</p>
         </div>
       </div>
     );
@@ -81,9 +81,9 @@ function ResultPage() {
     return (
       <div className="result-page">
         <div className="error-container">
-          <h2>Fehler</h2>
+          <h2>Error</h2>
           <p>{error}</p>
-          <button onClick={handlePlayAgain}>Zurück zur Startseite</button>
+          <button onClick={handlePlayAgain}>Back to home</button>
         </div>
       </div>
     );
@@ -92,15 +92,14 @@ function ResultPage() {
   return (
     <div className="result-page">
       <div className="result-container">
-        <h1 className="result-title">Spiel beendet! 🎉</h1>
+        <h1 className="result-title">Game over! 🎉</h1>
 
-        {/* Katzen-Bild von Cataas */}
         {catImageUrl && (
           <div className="cat-image-container">
             {imageLoading && (
               <div className="cat-image-loading">
                 <div className="spinner"></div>
-                <span>Bild wird geladen…</span>
+                <span>Loading image...</span>
               </div>
             )}
             {imageSrc && (
@@ -123,44 +122,41 @@ function ResultPage() {
           </div>
         )}
         {!imageLoading && imageSrc == null && (
-          <div className="cat-image-fallback">Katzenbild konnte nicht geladen werden.</div>
+          <div className="cat-image-fallback">Cat image could not be loaded.</div>
         )}
 
         {(result?.rank != null || formattedBetterThan != null) && (
           <div className="result-placement">
             {result?.rank != null && (
-              <div className="placement-text">Platzierung: {result.rank}</div>
+              <div className="placement-text">Placement: {result.rank}</div>
             )}
             {formattedBetterThan != null && (
               <div className="placement-text">
-                Besser als: {formattedBetterThan}%
+                Better than: {formattedBetterThan}%
               </div>
             )}
           </div>
         )}
 
-        {/* Gesamtpunktzahl */}
         <div className="total-score-section">
-          <h2>Deine Punktzahl</h2>
+          <h2>Your score</h2>
           <div className="total-score">{result?.totalScore || 0}</div>
-          <div className="score-subtitle">von max. 500 Punkten</div>
+          <div className="score-subtitle">out of 500 max points</div>
         </div>
 
-        {/* Rundenübersicht */}
         {result?.rounds && result.rounds.length > 0 && (
           <div className="rounds-overview">
-            <h3>Rundenübersicht</h3>
+            <h3>Round overview</h3>
             <RoundHistory rounds={result.rounds} showDetails={true} />
           </div>
         )}
 
-        {/* Platzierung im Leaderboard */}
         {result?.rank != null && (
           <div className="leaderboard-rank">
             <p>
               {result.rank <= 10
-                ? `🏆 Du bist auf Platz ${result.rank} im Leaderboard!`
-                : 'Du hast es nicht in die Top 10 geschafft. Versuche es nochmal!'
+                ? `🏆 You are ranked #${result.rank} on the leaderboard!`
+                : 'You did not make the top 10. Try again!'
               }
             </p>
           </div>
@@ -168,7 +164,7 @@ function ResultPage() {
 
         <div className="result-actions">
           <button className="play-again-button" onClick={handlePlayAgain}>
-            Nochmal spielen
+            Play again
           </button>
         </div>
       </div>
@@ -177,4 +173,3 @@ function ResultPage() {
 }
 
 export default ResultPage;
-

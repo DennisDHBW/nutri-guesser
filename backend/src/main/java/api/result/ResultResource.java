@@ -1,7 +1,11 @@
 package api.result;
-import service.result.ResultService;
+
+import api.result.dto.CatImageDTO;
+import api.result.dto.CatResponseDTO;
 import api.result.dto.ResultResponseDTO;
-import client.cataas.dto.CataasResponse;
+import api.result.mapper.ResultMapper;
+import service.result.ResultService;
+import service.result.ResultSummary;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -14,22 +18,28 @@ import java.util.UUID;
 @Path("/api/result")
 public class ResultResource {
 
+    private final ResultService resultService;
+
     @Inject
-    ResultService resultService;
+    public ResultResource(ResultService resultService) {
+        this.resultService = resultService;
+    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public ResultResponseDTO getResultResponse(
             @QueryParam("sessionId") UUID sessionId) {
-        return resultService.fetchResultResponseForSession(sessionId);
+        ResultSummary summary = resultService.fetchResultResponseForSession(sessionId);
+        return ResultMapper.toResultResponse(summary);
     }
 
     @GET
     @Path("/cat")
     @Produces(MediaType.APPLICATION_JSON)
-    public CataasResponse getCat(
+    public CatResponseDTO getCat(
             @QueryParam("sessionId") UUID sessionId) {
-        return resultService.fetchCatJsonForSession(sessionId);
+        var dto = resultService.fetchCatJsonForSession(sessionId);
+        return ResultMapper.toCatResponse(dto);
     }
 
     @GET
@@ -38,16 +48,11 @@ public class ResultResource {
     public Response getCatImage(
             @QueryParam("sessionId") UUID sessionId) {
 
-        byte[] data;
-        CataasResponse dto;
-
         if (sessionId == null) {
             throw new IllegalArgumentException("Session ID must be provided");
         }
-        dto = resultService.fetchCatJsonForSession(sessionId);
-        data = resultService.fetchCatImageForSession(sessionId);
 
-        String type = (dto != null && dto.mimetype() != null && dto.mimetype().startsWith("image/")) ? dto.mimetype() : "image/jpeg";
-        return Response.ok(data).type(type).build();
+        CatImageDTO imageResult = resultService.fetchCatImageForSession(sessionId);
+        return Response.ok(imageResult.data()).type(imageResult.mimeType()).build();
     }
 }
