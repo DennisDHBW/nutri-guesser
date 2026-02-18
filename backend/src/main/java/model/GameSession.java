@@ -9,6 +9,7 @@ import java.util.UUID;
 @Table(name = "GAME_SESSION")
 public class GameSession extends PanacheEntityBase {
     @Id
+    @GeneratedValue
     @Column(name = "SESSION_ID")
     public UUID sessionId;
 
@@ -23,5 +24,5 @@ public class GameSession extends PanacheEntityBase {
     public LocalDateTime endedAt;
 
     @Column(name = "TOTAL_SCORE", nullable = false)
-    public Integer totalScore;
+    public Integer totalScore = null;
 }

@@ -46,18 +46,20 @@ public class GameService {
 
         Product product = productRepository.findRandomFromDb();
 
-        Round round = createRound(session.sessionId, product);
+        Round round = createRound(session, product);
 
         return new StartGameResponse(session.sessionId, round.roundId, product.barcode, product.imageUrl);
     }
 
-    public RoundResponse nextRound(UUID session) {
+    @Transactional
+    public RoundResponse nextRound(UUID sessionId) {
+        GameSession session = gameSessionRepository.findById(sessionId);
         if (session == null) {
-            throw new IllegalArgumentException("Game session required");
+            throw new IllegalArgumentException("Game session not found: " + sessionId);
         }
 
-        if (gameSessionRepository.findById(session) == null) {
-            throw new IllegalArgumentException("Game session not found: " + session);
+        if (roundRepository.count("session.sessionId", sessionId) >= 5) {
+            throw new IllegalStateException("Maximum rounds reached for this session");
         }
 
         Product product = productRepository.findRandomFromDb();
@@ -66,13 +68,13 @@ public class GameService {
         return new RoundResponse(round.roundId, product.barcode, product.imageUrl);
     }
 
-    @Transactional
-    private Round createRound(UUID sessionId, Product product){
-        GameSession gameSession = gameSessionRepository.findById(sessionId);
+
+    private Round createRound(GameSession session, Product product){
         Round round = new Round();
-        round.session = gameSession;
+        round.session = session;
         round.product = product;
-        round.roundNumber = Math.toIntExact(roundRepository.count("session", sessionId) + 1);
+        long count = roundRepository.count("session.sessionId", session.sessionId);
+        round.roundNumber = (int) count + 1;
         roundRepository.persist(round);
         return round;
     }

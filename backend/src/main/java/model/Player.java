@@ -10,6 +10,7 @@ import java.util.UUID;
 public class Player extends PanacheEntityBase {
 
     @Id
+    @GeneratedValue
     @Column(name = "PLAYER_ID")
     public UUID playerId;
 

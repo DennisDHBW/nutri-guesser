@@ -8,6 +8,7 @@ import java.util.UUID;
 @Table(name = "ROUND")
 public class Round extends PanacheEntityBase {
     @Id
+    @GeneratedValue
     @Column(name = "ROUND_ID")
     public UUID roundId; //
 
