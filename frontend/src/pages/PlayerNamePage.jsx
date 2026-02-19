@@ -27,7 +27,7 @@ function PlayerNamePage() {
 
     try {
       // start game session and get initial round data
-      const { sessionId, roundId, barcode, imageUrl } = await api.startGameSession(name);
+      const { sessionId, roundId, barcode, imageUrl, name: productName } = await api.startGameSession(name);
 
       navigate(`/game/${sessionId}`, {
         state: {
@@ -35,7 +35,8 @@ function PlayerNamePage() {
           currentRoundData: {
             roundId,
             barcode,
-            imageUrl
+            imageUrl,
+            name: productName
           }
         }
       });

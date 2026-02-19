@@ -8,7 +8,7 @@ import jakarta.ws.rs.core.MediaType;
 import client.score.dto.ScoreRequest;
 import service.score.ScoreService;
 
-@Path("/score")
+@Path("/api/score")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ScoreResource {
