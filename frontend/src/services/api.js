@@ -44,16 +44,11 @@ export const api = {
   },
 
 
-  submitGuess: async (sessionId, productId, minCalories, maxCalories) => {
+  submitGuess: async (scoreRequest) => {
     const response = await fetch(`${API_BASE_URL}/score`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sessionId,
-        productId,
-        minCalories,
-        maxCalories
-      })
+      body: JSON.stringify(scoreRequest)
     });
     if (!response.ok) {
       const error = await response.text();

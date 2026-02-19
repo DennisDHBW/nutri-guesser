@@ -33,5 +33,5 @@ public class Round extends PanacheEntityBase {
     public Integer actualKcal; //
 
     @Column(name = "POINTS")
-    public Integer points = null; //
+    public Integer points = 0; //
 }

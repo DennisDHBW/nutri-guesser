@@ -23,6 +23,7 @@ function GamePage() {
   const [rounds, setRounds] = useState([]);
   const [currentRoundNumber, setCurrentRoundNumber] = useState(1);
   const [error, setError] = useState('');
+  const [imageError, setImageError] = useState(false);
 
   // Falls die Seite neu geladen wird und der State weg ist:
   useEffect(() => {
@@ -31,15 +32,23 @@ function GamePage() {
     }
   }, [roundData]);
 
+  useEffect(() => {
+    setImageError(false);
+  }, [roundData?.imageUrl]);
+
   const handleSubmitGuess = async () => {
+    if (!roundData?.roundId || !roundData?.barcode) {
+      setError('Produktdaten fehlen. Bitte starte das Spiel erneut.');
+      return;
+    }
     setSubmitting(true);
     setError('');
 
     try {
-      // Neuer Request Record: int guessed_Min, int guessed_Max, UUID roundId, String barcode
+      // Neuer Request Record: int guessedMin, int guessedMax, UUID roundId, String barcode
       const scoreRequest = {
-        guessed_Min: Math.round(minCalories),
-        guessed_Max: Math.round(maxCalories),
+        guessedMin: Math.round(minCalories),
+        guessedMax: Math.round(maxCalories),
         roundId: roundData.roundId,
         barcode: roundData.barcode
       };
@@ -85,6 +94,7 @@ function GamePage() {
       setMinCalories(0);
       setMaxCalories(1000);
     } catch (err) {
+      console.error('Error loading next round:', err);
       setError('Konnte nächste Runde nicht laden');
     } finally {
       setLoading(false);
@@ -106,7 +116,20 @@ function GamePage() {
           <div className="game-content">
             <div className="product-section">
               <div className="product-card">
-                <img src={roundData?.imageUrl} alt="Produkt" className="product-image" />
+                {roundData?.imageUrl && !imageError ? (
+                  <img
+                    src={roundData.imageUrl}
+                    alt={roundData?.name ?? 'Produkt'}
+                    className="product-image"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <div className="product-image-placeholder">
+                    <span>🍽️</span>
+                    <p>Kein Bild verfügbar</p>
+                  </div>
+                )}
+                {roundData?.name && <div className="product-name">{roundData.name}</div>}
               </div>
             </div>
 
