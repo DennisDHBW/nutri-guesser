@@ -1,18 +1,13 @@
 package client.openfoodfacts.dto;
 
-import lombok.Getter;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
-@Getter
-public class SearchResponse {
-    private Integer count;
-    private Integer page;
-    private Integer page_size;
-    private List<SearchProduct> products;
-
-    @Getter
-    public static class SearchProduct {
-        private String code;
-    }
+public record SearchResponse(
+        Integer count,
+        Integer page,
+        @JsonProperty("page_size") Integer pageSize,
+        List<SearchProduct> products
+) {
+    public record SearchProduct(String code) {}
 }

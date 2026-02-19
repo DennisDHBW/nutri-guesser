@@ -29,7 +29,7 @@ public class OpenFoodFactsService {
     OpenFoodFactsSearchClient searchClient;
 
     @Transactional(TxType.REQUIRES_NEW)
-    @RateLimit(value = 100, window = 1, windowUnit = ChronoUnit.MINUTES)
+    @RateLimit(window = 1, windowUnit = ChronoUnit.MINUTES)
     public ProductResponse fetchProduct(String barcode) {
 
         Product cached = productRepository.findById(barcode);
@@ -37,7 +37,7 @@ public class OpenFoodFactsService {
             return null;
         }
 
-        ProductResponse remote = null;
+        ProductResponse remote;
         try {
             remote = productClient.fetchProductByCode(barcode);
         } catch (Exception e) {
@@ -45,7 +45,7 @@ public class OpenFoodFactsService {
             return null;
         }
 
-        if (remote != null && remote.getProduct() != null && isValidProduct(remote)) {
+        if (remote != null && remote.product() != null && isValidProduct(remote)) {
             try {
                 persistProduct(remote);
                 return remote;
@@ -57,31 +57,31 @@ public class OpenFoodFactsService {
     }
 
     private boolean isValidProduct(ProductResponse response) {
-        if (response == null || response.getProduct() == null) return false;
+        if (response == null || response.product() == null) return false;
 
-        String name = response.getProduct().getProductName();
+        String name = response.product().getProductName();
         if (name == null || name.trim().isEmpty()) {
             return false;
         }
 
-        return response.getCode() != null && !response.getCode().trim().isEmpty();
+        return response.code() != null && !response.code().trim().isEmpty();
     }
 
     @Transactional(TxType.MANDATORY)
     protected void persistProduct(ProductResponse productResponse) {
-        if (productRepository.findById(productResponse.getCode()) != null) return;
+        if (productRepository.findById(productResponse.code()) != null) return;
 
         Product product = new Product();
-        product.barcode = productResponse.getCode();
-        product.name = productResponse.getProduct().getProductName();
-        product.brand = productResponse.getProduct().getBrands();
-        product.imageUrl = productResponse.getProduct().getImageUrl();
+        product.barcode = productResponse.code();
+        product.name = productResponse.product().getProductName();
+        product.brand = productResponse.product().getBrands();
+        product.imageUrl = productResponse.product().getImageUrl();
 
         NutritionFacts nutritionFacts = new NutritionFacts();
         nutritionFacts.product = product;
 
-        if (productResponse.getProduct().getNutriments() != null) {
-            nutritionFacts.kcal100g = productResponse.getProduct().getNutriments().getEnergyKcal100G();
+        if (productResponse.product().getNutriments() != null) {
+            nutritionFacts.kcal100g = productResponse.product().getNutriments().getEnergyKcal100G();
         }
 
         product.nutritionFacts = nutritionFacts;
@@ -89,7 +89,7 @@ public class OpenFoodFactsService {
         try {
             productRepository.persist(product);
         } catch (Exception e) {
-            System.err.println("Datenbank-Fehler beim Speichern von " + productResponse.getCode() + ": " + e.getMessage());
+            System.err.println("Datenbank-Fehler beim Speichern von " + productResponse.code() + ": " + e.getMessage());
             throw e;
         }
     }
@@ -132,13 +132,13 @@ public class OpenFoodFactsService {
             try {
                 SearchResponse searchResponse = searchFood(searchTerm, page);
 
-                if (searchResponse == null || searchResponse.getProducts() == null || searchResponse.getProducts().isEmpty()) {
+                if (searchResponse == null || searchResponse.products() == null || searchResponse.products().isEmpty()) {
                     System.out.println("Keine weiteren Produkte auf Seite " + page);
                     break;
                 }
 
-                List<String> barcodes = searchResponse.getProducts().stream()
-                        .map(SearchResponse.SearchProduct::getCode)
+                List<String> barcodes = searchResponse.products().stream()
+                        .map(SearchResponse.SearchProduct::code)
                         .filter(code -> code != null && !code.trim().isEmpty())
                         .distinct()
                         .toList();
@@ -162,6 +162,7 @@ public class OpenFoodFactsService {
                     }
 
                     try {
+                        //noinspection BusyWait
                         Thread.sleep(50);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();

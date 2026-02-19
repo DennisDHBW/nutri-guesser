@@ -1,25 +1,14 @@
 package client.openfoodfacts.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
 
-@Data
-public class Ingredient {
-
-    @JsonProperty("from_palm_oil")
-    private String fromPalmOil;
-
-    private String id;
-
-    private String origin;
-
-    private String percent;
-
-    private int rank;
-
-    private String text;
-
-    private String vegan;
-
-    private String vegetarian;
-}
+public record Ingredient(
+        @JsonProperty("from_palm_oil") String fromPalmOil,
+        String id,
+        String origin,
+        String percent,
+        int rank,
+        String text,
+        String vegan,
+        String vegetarian
+) {}
