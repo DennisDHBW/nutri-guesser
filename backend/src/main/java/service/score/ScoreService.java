@@ -51,7 +51,7 @@ public class ScoreService {
         int finalScore = 0;
 
         if (request.guessedMin() <= kcal && kcal <= request.guessedMax()) {
-            double rawScore = SCORE_MULTIPLIER * exp(SCORE_EXP_FACTOR * (MAX_GUESS_RANGE - guessedRange) - 1);
+            double rawScore = SCORE_MULTIPLIER * (exp(SCORE_EXP_FACTOR * (MAX_GUESS_RANGE - guessedRange))-1);
             finalScore = (int) Math.round(rawScore);
         }
 
