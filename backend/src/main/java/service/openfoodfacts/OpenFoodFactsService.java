@@ -98,10 +98,6 @@ public class OpenFoodFactsService {
         return productRepository.count();
     }
 
-    public Product getRandomLocal() {
-        return productRepository.findRandomFromDb();
-    }
-
     @RateLimit(value = 10, window = 1, windowUnit = ChronoUnit.MINUTES)
     public SearchResponse searchFood(String terms, int page) {
         try {
@@ -111,7 +107,6 @@ public class OpenFoodFactsService {
             return null;
         }
     }
-
 
     public int loadAdditionalProducts(int additionalCount, String searchTerm) {
         long startCount = getLocalProductCount();

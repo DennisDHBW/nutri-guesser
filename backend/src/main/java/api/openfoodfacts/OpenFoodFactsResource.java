@@ -1,6 +1,5 @@
 package api.openfoodfacts;
 
-import api.openfoodfacts.dto.RandomImageResponse;
 import api.openfoodfacts.dto.PopulationResponse;
 import jakarta.ws.rs.*;
 import service.openfoodfacts.OpenFoodFactsService;
@@ -13,18 +12,6 @@ public class OpenFoodFactsResource {
 
     @Inject
     OpenFoodFactsService offService;
-
-    @GET
-    @Path("/random")
-    public RandomImageResponse getRandom() {
-        model.Product product = offService.getRandomLocal();
-
-        if (product != null && product.imageUrl != null) {
-            return new RandomImageResponse(product.barcode, product.imageUrl);
-        }
-
-        return new RandomImageResponse(null, "Keine Produkte in der Datenbank. Bitte zuerst /api/off/admin/load/50 aufrufen.");
-    }
 
     @POST
     @Path("/admin/load/{count}")
@@ -90,7 +77,7 @@ public class OpenFoodFactsResource {
     @GET
     @Path("/admin/count")
     @Produces(MediaType.TEXT_PLAIN)
-    public long getCount() {
-        return offService.getLocalProductCount();
+    public String getCount() {
+        return offService.getLocalProductCount() + " Produkte in der lokalen Datenbank.\n";
     }
 }
