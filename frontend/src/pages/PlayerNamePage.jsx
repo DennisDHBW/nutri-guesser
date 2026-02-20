@@ -13,12 +13,12 @@ function PlayerNamePage() {
     e.preventDefault();
 
     if (name.trim().length === 0) {
-      setError('Bitte gib einen Namen ein');
+      setError('Please enter a name');
       return;
     }
 
     if (name.length > 12) {
-      setError('Name darf maximal 12 Zeichen lang sein');
+      setError('Name must be at most 12 characters long');
       return;
     }
 
@@ -42,7 +42,7 @@ function PlayerNamePage() {
       });
     } catch (err) {
       console.error('Error starting game:', err);
-      setError('Fehler beim Starten des Spiels. Bitte versuche es erneut.');
+      setError('Error starting the game. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -51,8 +51,8 @@ function PlayerNamePage() {
   return (
     <div className="player-name-page">
       <div className="name-container">
-        <h1 className="title">Willkommen! 👋</h1>
-        <p className="subtitle">Gib deinen Namen ein, um zu starten</p>
+        <h1 className="title">Welcome! 👋</h1>
+        <p className="subtitle">Enter your name to start</p>
 
         <form onSubmit={handleSubmit} className="name-form">
           <div className="input-group">
@@ -60,14 +60,14 @@ function PlayerNamePage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Dein Name"
-              maxLength={12}
+              placeholder="Your name"
+              maxLength={20}
               className="name-input"
               disabled={loading}
               autoFocus
             />
             <div className="char-counter">
-              {name.length}/12
+              {name.length}/20
             </div>
           </div>
 
@@ -78,7 +78,7 @@ function PlayerNamePage() {
             className="submit-button"
             disabled={loading || name.trim().length === 0}
           >
-            {loading ? 'Starte...' : 'Spiel beginnen'}
+            {loading ? 'Starting...' : 'Start game'}
           </button>
         </form>
 
@@ -87,7 +87,7 @@ function PlayerNamePage() {
           onClick={() => navigate('/')}
           disabled={loading}
         >
-          Zurück
+          Back
         </button>
       </div>
     </div>

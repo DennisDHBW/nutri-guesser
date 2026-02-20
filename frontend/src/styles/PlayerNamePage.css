@@ -28,6 +28,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin-bottom: 5px;
 }
 .input-group {
   position: relative;
@@ -85,18 +86,26 @@
   transform: none;
 }
 .back-button {
-  padding: 12px;
+  padding: 14px 24px;
   font-size: 1rem;
+  font-weight: 600;
   color: #667eea;
-  background: transparent;
+  background: white;
   border: 2px solid #667eea;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  display: inline-block;
+  margin-top: 10px;
 }
 .back-button:hover:not(:disabled) {
   background: #667eea;
   color: white;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px);
+}
+.back-button:active:not(:disabled) {
+  transform: translateY(0);
 }
 .back-button:disabled {
   opacity: 0.5;

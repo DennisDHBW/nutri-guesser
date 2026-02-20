@@ -14,7 +14,19 @@ function ResultPage() {
 
   const loadResult = useCallback(async () => {
     try {
-      const data = await api.getResult(sessionId);
+      const cacheKey = `result_${sessionId}`;
+      const cachedData = sessionStorage.getItem(cacheKey);
+
+      let data;
+      if (cachedData) {
+        console.log('Using cached result data for sessionId:', sessionId);
+        data = JSON.parse(cachedData);
+      } else {
+        console.log('Fetching fresh result data for sessionId:', sessionId);
+        data = await api.getResult(sessionId);
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+      }
+
       setResult(data);
     } catch (err) {
       console.error('Error loading result:', err);
@@ -29,6 +41,8 @@ function ResultPage() {
   }, [loadResult]);
 
   const handlePlayAgain = () => {
+    const cacheKey = `result_${sessionId}`;
+    sessionStorage.removeItem(cacheKey);
     navigate('/');
   };
 
@@ -42,11 +56,14 @@ function ResultPage() {
   }, [result]);
 
   const catImageUrl = useMemo(() => {
+    if (result?.url) {
+      return normalizedResultUrl;
+    }
     if (sessionId) {
       return `/api/result/image?sessionId=${sessionId}`;
     }
-    return normalizedResultUrl;
-  }, [normalizedResultUrl, sessionId]);
+    return null;
+  }, [normalizedResultUrl, result?.url, sessionId]);
 
   const [imageSrc, setImageSrc] = useState(catImageUrl);
   const [imageLoading, setImageLoading] = useState(Boolean(catImageUrl));
@@ -92,7 +109,7 @@ function ResultPage() {
   return (
     <div className="result-page">
       <div className="result-container">
-        <h1 className="result-title">Game over! 🎉</h1>
+        <h1 className="result-title">Game over!</h1>
 
         {catImageUrl && (
           <div className="cat-image-container">

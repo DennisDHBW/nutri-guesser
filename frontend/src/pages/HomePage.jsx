@@ -27,25 +27,32 @@ function HomePage() {
     navigate('/enter-name');
   };
 
+  const handleInfo = () => {
+    navigate('/info');
+  };
+
   return (
     <div className="home-page">
+      <button className="info-button-floating" onClick={handleInfo} title="Learn more about this project">
+        ℹ️ Info
+      </button>
       <div className="home-container">
         <div className="header">
           <h1 className="title">🍔 NutriGuesser 🥗</h1>
-          <p className="subtitle">Schätze die Kalorien - Lerne spielerisch!</p>
+          <p className="subtitle">Guess the calories - Learn while playing!</p>
         </div>
 
         <button className="start-button" onClick={handleStartGame}>
-          Spiel starten
+          Start Game
         </button>
 
         <div className="leaderboard-section">
           <h2 className="leaderboard-title">🏆 Leaderboard</h2>
           <div className="leaderboard-container">
             {loading ? (
-              <div className="loading">Lade Leaderboard...</div>
+              <div className="loading">Loading leaderboard...</div>
             ) : leaderboard.length === 0 ? (
-              <div className="empty">Noch keine Einträge vorhanden</div>
+              <div className="empty">No entries yet</div>
             ) : (
               <div className="leaderboard-list">
                 {leaderboard.map((entry, index) => (
@@ -59,8 +66,8 @@ function HomePage() {
                       {index === 2 && '🥉'}
                       {index > 2 && `#${index + 1}`}
                     </div>
-                    <div className="player-name">{entry.playerName || entry.player?.nickname || 'Unbekannt'}</div>
-                    <div className="score">{entry.score || 0} Pkt</div>
+                    <div className="player-name">{entry.playerName || entry.player?.nickname || 'Unknown'}</div>
+                    <div className="score">{entry.score || 0} pts</div>
                   </div>
                 ))}
               </div>

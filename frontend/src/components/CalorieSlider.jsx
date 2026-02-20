@@ -38,10 +38,10 @@ function CalorieSlider({ min, max, onMinChange, onMaxChange }) {
         const percentage = x / rect.width;
         const value = Math.round(percentage * MAX_CALORIES);
         if (isDraggingMin) {
-          const newMin = Math.max(0, Math.min(value, max - 1));
+          const newMin = Math.max(0, Math.min(value, max));
           onMinChange(newMin);
         } else if (isDraggingMax) {
-          const newMax = Math.min(MAX_CALORIES, Math.max(value, min + 1));
+          const newMax = Math.min(MAX_CALORIES, Math.max(value, min));
           onMaxChange(newMax);
         }
       };
@@ -61,14 +61,14 @@ function CalorieSlider({ min, max, onMinChange, onMaxChange }) {
   };
   const handleMinInputBlur = () => {
     const value = parseInt(tempMin) || 0;
-    const newMin = Math.max(0, Math.min(value, max - 1, MAX_CALORIES));
+    const newMin = Math.max(0, Math.min(value, max, MAX_CALORIES));
     onMinChange(newMin);
     setTempMin(newMin.toString());
     setEditingMin(false);
   };
   const handleMaxInputBlur = () => {
     const value = parseInt(tempMax) || 0;
-    const newMax = Math.min(MAX_CALORIES, Math.max(value, min + 1, 0));
+    const newMax = Math.min(MAX_CALORIES, Math.max(value, min, 0));
     onMaxChange(newMax);
     setTempMax(newMax.toString());
     setEditingMax(false);
@@ -168,7 +168,7 @@ function CalorieSlider({ min, max, onMinChange, onMaxChange }) {
         </div>
       </div>
       <div className="range-info">
-        Geschätzter Bereich: <strong>{min} - {max} kcal</strong> (Spanne: {max - min} kcal)
+        Estimated range: <strong>{min} - {max} kcal</strong> (Span: {max - min} kcal)
       </div>
     </div>
   );

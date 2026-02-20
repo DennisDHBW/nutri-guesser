@@ -26,6 +26,43 @@
   font-size: 1.2rem;
   color: #666;
 }
+
+.info-button-floating {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #667eea;
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  z-index: 100;
+}
+
+.info-button-floating:hover {
+  background: #667eea;
+  color: white;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+}
+
+.info-button-floating:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .info-button-floating {
+    top: 15px;
+    right: 15px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}
 .start-button {
   width: 100%;
   padding: 16px;
