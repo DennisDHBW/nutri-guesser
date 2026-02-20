@@ -112,7 +112,7 @@ public class OpenFoodFactsService {
         long startCount = getLocalProductCount();
         long targetCount = startCount + additionalCount;
 
-        System.out.println("Lade " + additionalCount + " neue Produkte... Aktuell: " + startCount + ", Ziel: " + targetCount);
+        System.out.println("Lade " + additionalCount + " neue Produkte(" + searchTerm + ") ... Aktuell: " + startCount + ", Ziel: " + targetCount);
 
         if (additionalCount <= 0) {
             System.out.println("Anzahl muss positiv sein");
