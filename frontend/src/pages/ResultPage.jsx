@@ -109,7 +109,7 @@ function ResultPage() {
   return (
     <div className="result-page">
       <div className="result-container">
-        <h1 className="result-title">Game over! 🎉</h1>
+        <h1 className="result-title">Game over!</h1>
 
         {catImageUrl && (
           <div className="cat-image-container">

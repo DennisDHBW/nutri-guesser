@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage';
 import PlayerNamePage from './pages/PlayerNamePage';
 import GamePage from './pages/GamePage';
 import ResultPage from './pages/ResultPage';
+import InfoPage from './pages/InfoPage';
 import './styles/App.css';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
       <div className="app">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/info" element={<InfoPage />} />
           <Route path="/enter-name" element={<PlayerNamePage />} />
           <Route path="/game/:sessionId" element={<GamePage />} />
           <Route path="/result/:sessionId" element={<ResultPage />} />

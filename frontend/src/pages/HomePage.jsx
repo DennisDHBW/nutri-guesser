@@ -27,8 +27,15 @@ function HomePage() {
     navigate('/enter-name');
   };
 
+  const handleInfo = () => {
+    navigate('/info');
+  };
+
   return (
     <div className="home-page">
+      <button className="info-button-floating" onClick={handleInfo} title="Learn more about this project">
+        ℹ️ Info
+      </button>
       <div className="home-container">
         <div className="header">
           <h1 className="title">🍔 NutriGuesser 🥗</h1>
