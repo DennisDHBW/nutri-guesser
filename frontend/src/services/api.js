@@ -1,7 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 export const api = {
-  // Leaderboard abrufen
+  // Get leaderboard
   getLeaderboard: async () => {
     const response = await fetch(`${API_BASE_URL}/leaderboard`);
     if (!response.ok) {
@@ -57,7 +57,7 @@ export const api = {
     return response.json();
   },
 
-  // Spielergebnis abrufen
+  // Get game result
   getResult: async (sessionId) => {
     const response = await fetch(`${API_BASE_URL}/result?sessionId=${sessionId}`);
     if (!response.ok) {
@@ -67,7 +67,7 @@ export const api = {
     return response.json();
   },
 
-  // OpenFoodFacts (interner Service) - Zufallsbild
+  // OpenFoodFacts (internal service) - Random image
   getOffRandom: async () => {
     const response = await fetch(`${API_BASE_URL}/off/random`);
     if (!response.ok) {
@@ -77,7 +77,7 @@ export const api = {
     return response.json();
   },
 
-  // OpenFoodFacts (interner Service) - Produktdetails
+  // OpenFoodFacts (internal service) - Product details
   getOffProduct: async (barcode) => {
     const response = await fetch(`${API_BASE_URL}/off/product/${barcode}`);
     if (!response.ok) {

@@ -10,14 +10,14 @@ function GamePage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Initialdaten kommen aus dem Navigation-State (von der Startseite)
+  // Initial data comes from navigation state (from start page)
   const [roundData, setRoundData] = useState(location.state?.currentRoundData || null);
 
   const [minCalories, setMinCalories] = useState(0);
   const [maxCalories, setMaxCalories] = useState(1000);
   const [loading, setLoading] = useState(!roundData);
   const [submitting, setSubmitting] = useState(false);
-  const [showResult, setShowResult] = useState(false); // Zeigt Ergebnis nach dem Schätzen
+  const [showResult, setShowResult] = useState(false); // Shows result after guessing
   const [lastScore, setLastScore] = useState(null);
 
   const [rounds, setRounds] = useState([]);
@@ -25,10 +25,10 @@ function GamePage() {
   const [error, setError] = useState('');
   const [imageError, setImageError] = useState(false);
 
-  // Falls die Seite neu geladen wird und der State weg ist:
+  // If page is reloaded and state is lost:
   useEffect(() => {
     if (!roundData) {
-      setError("Sitzung ungültig. Bitte starte das Spiel von vorne.");
+      setError("Session invalid. Please start the game again.");
     }
   }, [roundData]);
 
@@ -38,14 +38,14 @@ function GamePage() {
 
   const handleSubmitGuess = async () => {
     if (!roundData?.roundId || !roundData?.barcode) {
-      setError('Produktdaten fehlen. Bitte starte das Spiel erneut.');
+      setError('Product data missing. Please start the game again.');
       return;
     }
     setSubmitting(true);
     setError('');
 
     try {
-      // Neuer Request Record: int guessedMin, int guessedMax, UUID roundId, String barcode
+      // New request record: int guessedMin, int guessedMax, UUID roundId, String barcode
       const scoreRequest = {
         guessedMin: Math.round(minCalories),
         guessedMax: Math.round(maxCalories),
@@ -54,7 +54,7 @@ function GamePage() {
       };
 
       const result = await api.submitGuess(scoreRequest);
-      // result enthält: { points, actualKcal, isLastRound }
+      // result contains: { points, actualKcal, isLastRound }
 
       setLastScore(result);
 
@@ -66,11 +66,11 @@ function GamePage() {
       };
 
       setRounds(prev => [...prev, newRoundHistoryEntry]);
-      setShowResult(true); // Schaltet die Ansicht um (Ergebnis anzeigen)
+      setShowResult(true); // Switches view to show result
 
     } catch (err) {
       console.error('Error submitting guess:', err);
-      setError('Fehler beim Absenden der Schätzung');
+      setError('Error submitting your guess');
     } finally {
       setSubmitting(false);
     }
@@ -84,7 +84,7 @@ function GamePage() {
 
     setLoading(true);
     try {
-      // Aufruf von /nextround?sessionId=...
+      // Call /nextround?sessionId=...
       const nextData = await api.startNextRound(sessionId);
       // nextData: { roundId, barcode, imageUrl }
 
@@ -95,20 +95,20 @@ function GamePage() {
       setMaxCalories(1000);
     } catch (err) {
       console.error('Error loading next round:', err);
-      setError('Konnte nächste Runde nicht laden');
+      setError('Could not load next round');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="loading">Lade...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
       <div className="game-page">
         <div className="game-container">
           <div className="game-header">
             <h1>NutriGuesser</h1>
-            <div className="round-indicator">Runde {currentRoundNumber} von 5</div>
+            <div className="round-indicator">Round {currentRoundNumber} of 5</div>
           </div>
 
           {error && <div className="error-banner">{error}</div>}
@@ -126,7 +126,7 @@ function GamePage() {
                 ) : (
                   <div className="product-image-placeholder">
                     <span>🍽️</span>
-                    <p>Kein Bild verfügbar</p>
+                    <p>No image available</p>
                   </div>
                 )}
                 {roundData?.name && <div className="product-name">{roundData.name}</div>}
@@ -136,7 +136,7 @@ function GamePage() {
             <div className="guess-section">
               {!showResult ? (
                   <>
-                    <h3>Schätze die Kalorien (pro 100g)</h3>
+                    <h3>Guess the calories (per 100g)</h3>
                     <CalorieSlider
                         min={minCalories}
                         max={maxCalories}
@@ -148,16 +148,16 @@ function GamePage() {
                         onClick={handleSubmitGuess}
                         disabled={submitting}
                     >
-                      {submitting ? 'Sende...' : 'Schätzung abgeben'}
+                      {submitting ? 'Sending...' : 'Submit guess'}
                     </button>
                   </>
               ) : (
                   <div className="result-display">
-                    <h3>Ergebnis:</h3>
-                    <p>Tatsächliche Kalorien: <strong>{lastScore.actualKcal} kcal</strong></p>
-                    <p>Erhaltene Punkte: <strong>{lastScore.points}</strong></p>
+                    <h3>Result:</h3>
+                    <p>Actual calories: <strong>{lastScore.actualKcal} kcal</strong></p>
+                    <p>Points earned: <strong>{lastScore.points}</strong></p>
                     <button className="next-round-button" onClick={handleNextRound}>
-                      {lastScore.isLastRound ? 'Zum Endergebnis' : 'Nächste Runde'}
+                      {lastScore.isLastRound ? 'View final result' : 'Next round'}
                     </button>
                   </div>
               )}
