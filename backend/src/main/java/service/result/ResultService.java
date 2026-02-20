@@ -246,23 +246,23 @@ public class ResultService {
     @Getter
     enum ResultTier {
         TIER_1(
-                Arrays.asList("sleep", "sleeping", "sleepy", "tired", "lazy", "bored", "grumpy", "sad", "nap", "lay", "bed", "blanket"),
+                Arrays.asList("Sleep", "Sleeping", "Sleepy", "tired", "lazy", "bored", "Grumpy", "Sad", "nap", "Lay", "Bed", "blanket"),
                 Arrays.asList("Not my best...", "Ouch!", "That hurt", "Did I do that?", "What was that?")
         ),
         TIER_2(
-                Arrays.asList("cute", "kitten", "kittens", "baby", "smol", "tiny", "fluffy", "floof", "soft", "flower", "pretty", "lovely", "hug", "basket"),
+                Arrays.asList("Cute", "Kitten", "kittens", "Baby", "Smol", "tiny", "Fluffy", "floof", "soft", "flower", "pretty", "lovely", "hug", "basket"),
                 Arrays.asList("Pretty good!", "Not bad!", "Getting better!", "Nice try!", "Keep going!")
         ),
         TIER_3(
-                Arrays.asList("zoomies", "jump", "jumping", "running", "crazy", "silly", "funny", "tongue", "blep", "derp", "play", "playing", "attack", "surprised", "shocked", "scream"),
+                Arrays.asList("Zoomies", "jump", "jumping", "running", "crazy", "Silly", "Funny", "tongue", "blep", "derp", "play", "playing", "attack", "surprised", "shocked", "scream"),
                 Arrays.asList("Amazing!", "Fantastic!", "You rock!", "Impressive!", "Wow!")
         ),
         TIER_4(
-                Arrays.asList("sunglasses", "glasses", "cool", "business", "work", "working", "office", "tie", "tuxedo", "computer", "laptop", "bossy", "rich", "money", "king", "regal"),
+                Arrays.asList("sunglasses", "cool", "business", "work", "working", "office", "tie", "Tuxedo", "computer", "laptop", "bossy", "rich", "money", "regal"),
                 Arrays.asList("Business time", "Let's get serious", "Professional mode", "Show time", "All business")
         ),
         TIER_5(
-                Arrays.asList("meme", "space", "trippy", "psychedelic", "bread", "loaf", "burrito", "party", "nyan", "nyancat", "popcorn", "food", "chonker", "fat", "unit", "laser", "alien", "glow"),
+                Arrays.asList("Meme", "space", "Trippy", "psychedelic", "bread", "loaf", "burrito", "party", "nyan", "nyancat", "food", "chonker", "FAT", "unit", "alien", "glow"),
                 Arrays.asList("LEGENDARY MODE", "ULTIMATE POWER", "UNSTOPPABLE", "ELITE LEVEL", "GODMODE ACTIVATED")
         );
 
