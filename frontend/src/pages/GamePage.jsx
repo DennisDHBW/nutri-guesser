@@ -153,9 +153,18 @@ function GamePage() {
                   </>
               ) : (
                   <div className="result-display">
-                    <h3>Result:</h3>
-                    <p>Actual calories: <strong>{lastScore.actualKcal} kcal</strong></p>
-                    <p>Points earned: <strong>{lastScore.points}</strong></p>
+                    <div className="result-title">Round Result</div>
+                    <div className="result-content">
+                      <div className="result-item">
+                        <span className="result-label">Actual Calories:</span>
+                        <span className="result-value">{lastScore.actualKcal}</span>
+                        <span className="result-unit">kcal</span>
+                      </div>
+                      <div className="result-item">
+                        <span className="result-label">Points Earned:</span>
+                        <span className="result-value points">{lastScore.points}</span>
+                      </div>
+                    </div>
                     <button className="next-round-button" onClick={handleNextRound}>
                       {lastScore.isLastRound ? 'View final result' : 'Next round'}
                     </button>

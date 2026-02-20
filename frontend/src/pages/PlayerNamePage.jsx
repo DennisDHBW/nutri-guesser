@@ -61,13 +61,13 @@ function PlayerNamePage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              maxLength={12}
+              maxLength={20}
               className="name-input"
               disabled={loading}
               autoFocus
             />
             <div className="char-counter">
-              {name.length}/12
+              {name.length}/20
             </div>
           </div>
 
