@@ -42,13 +42,17 @@ public class GameService {
         GameSession session = new GameSession();
         session.player = player;
         session.startedAt = LocalDateTime.now();
+        session.totalScore = 0;
         gameSessionRepository.persist(session);
 
         Product product = productRepository.findRandomFromDb();
+        if (product == null) {
+            throw new IllegalStateException("No products available. Ensure test data is loaded.");
+        }
 
         Round round = createRound(session, product);
 
-        return new StartGameResponse(session.sessionId, round.roundId, product.barcode, product.imageUrl);
+        return new StartGameResponse(session.sessionId, round.roundId, product.barcode, product.imageUrl, product.name);
     }
 
     @Transactional
@@ -63,9 +67,12 @@ public class GameService {
         }
 
         Product product = productRepository.findRandomFromDb();
+        if (product == null) {
+            throw new IllegalStateException("No products available. Ensure test data is loaded.");
+        }
         Round round = createRound(session, product);
 
-        return new RoundResponse(round.roundId, product.barcode, product.imageUrl);
+        return new RoundResponse(round.roundId, product.barcode, product.imageUrl, product.name);
     }
 
 
@@ -80,5 +87,3 @@ public class GameService {
     }
 
 }
-
-

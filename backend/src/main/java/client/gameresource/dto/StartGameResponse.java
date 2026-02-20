@@ -6,6 +6,7 @@ public record StartGameResponse(
         UUID sessionId,
         UUID roundId,
         String barcode,
-        String imageUrl
+        String imageUrl,
+        String name
 ) {
 }

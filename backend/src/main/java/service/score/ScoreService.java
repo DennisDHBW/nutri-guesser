@@ -32,12 +32,12 @@ public class ScoreService {
         if (round == null) {
             throw new IllegalArgumentException("Round not found: " + request.roundId());
         }
-        if (round.points != 0) {
+        if (round.points != null && round.points != 0) {
             throw new IllegalStateException("This round has already been scored.");
         }
 
-        round.guessedMin = request.guessed_Min();
-        round.guessedMax = request.guessed_Max();
+        round.guessedMin = request.guessedMin();
+        round.guessedMax = request.guessedMax();
 
         var nutritionFacts = nutritionFactsRepository.findById(request.barcode());
         if (nutritionFacts == null) {
@@ -47,11 +47,11 @@ public class ScoreService {
         float kcal = nutritionFacts.kcal100g;
         round.actualKcal = (int) kcal;
 
-        int guessedRange = request.guessed_Max() - request.guessed_Min();
+        int guessedRange = request.guessedMax() - request.guessedMin();
         int finalScore = 0;
 
-        if (request.guessed_Min() <= kcal && kcal <= request.guessed_Max()) {
-            double rawScore = SCORE_MULTIPLIER * exp(SCORE_EXP_FACTOR * (MAX_GUESS_RANGE - guessedRange) - 1);
+        if (request.guessedMin() <= kcal && kcal <= request.guessedMax()) {
+            double rawScore = SCORE_MULTIPLIER * (exp(SCORE_EXP_FACTOR * (MAX_GUESS_RANGE - guessedRange))-1);
             finalScore = (int) Math.round(rawScore);
         }
 

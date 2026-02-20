@@ -11,29 +11,17 @@ export const api = {
     return response.json();
   },
 
-  // Neuen Spieler erstellen
-  createPlayer: async (name) => {
-    console.log('Creating player with name:', name);
-    const response = await fetch(`${API_BASE_URL}/players`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
-    });
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Create player failed:', response.status, error);
-      throw new Error(`Failed to create player: ${response.status} - ${error}`);
-    }
-    const player = await response.json();
-    console.log('Player created:', player);
-    return player;
-  },
 
-  // Neue Spielsession starten
-  startGameSession: async (playerId) => {
-    console.log('Starting game session for player:', playerId);
-    const response = await fetch(`${API_BASE_URL}/game/start?playerId=${playerId}`, {
-      method: 'POST'
+  startGameSession: async (nickname) => {
+    console.log('Starting game session for player:', nickname);
+    const response = await fetch(`${API_BASE_URL}/game/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        nickname: nickname
+      })
     });
     if (!response.ok) {
       const error = await response.text();
@@ -45,27 +33,22 @@ export const api = {
     return session;
   },
 
-  // Nächstes Produkt abrufen
-  getNextProduct: async (sessionId) => {
-    const response = await fetch(`${API_BASE_URL}/game/next-product?sessionId=${sessionId}`);
+
+  startNextRound: async (sessionId) => {
+    const response = await fetch(`${API_BASE_URL}/game/nextround?sessionId=${sessionId}`);
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Failed to fetch next product: ${response.status} - ${error}`);
+      throw new Error(`Failed to fetch next round: ${response.status} - ${error}`);
     }
     return response.json();
   },
 
-  // Schätzung abgeben
-  submitGuess: async (sessionId, productId, minCalories, maxCalories) => {
-    const response = await fetch(`${API_BASE_URL}/game/guess`, {
+
+  submitGuess: async (scoreRequest) => {
+    const response = await fetch(`${API_BASE_URL}/score`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sessionId,
-        productId,
-        minCalories,
-        maxCalories
-      })
+      body: JSON.stringify(scoreRequest)
     });
     if (!response.ok) {
       const error = await response.text();

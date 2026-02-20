@@ -26,14 +26,20 @@ function PlayerNamePage() {
     setError('');
 
     try {
-      // Erstelle Spieler
-      const player = await api.createPlayer(name.trim());
+      // start game session and get initial round data
+      const { sessionId, roundId, barcode, imageUrl, name: productName } = await api.startGameSession(name);
 
-      // Starte Spielsession
-      const session = await api.startGameSession(player.playerId);
-
-      // Navigiere zur Spielseite
-      navigate(`/game/${session.sessionId}`);
+      navigate(`/game/${sessionId}`, {
+        state: {
+          sessionId,
+          currentRoundData: {
+            roundId,
+            barcode,
+            imageUrl,
+            name: productName
+          }
+        }
+      });
     } catch (err) {
       console.error('Error starting game:', err);
       setError('Fehler beim Starten des Spiels. Bitte versuche es erneut.');

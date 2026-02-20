@@ -6,16 +6,16 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.util.UUID;
 
 public record ScoreRequest(
-        @NotNull @PositiveOrZero Integer guessed_Min,
-        @NotNull @PositiveOrZero Integer guessed_Max,
+        @NotNull @PositiveOrZero Integer guessedMin,
+        @NotNull @PositiveOrZero Integer guessedMax,
         @NotNull UUID roundId,
         @NotNull String barcode
 ) {
     @AssertTrue(message = "Unplausible values")
     public boolean isRangeValid() {
-        if (guessed_Min == null || guessed_Max == null) {
+        if (guessedMin == null || guessedMax == null) {
             return true; // @NotNull will find the error
         }
-        return guessed_Min <= guessed_Max;
+        return guessedMin <= guessedMax;
     }
 }
