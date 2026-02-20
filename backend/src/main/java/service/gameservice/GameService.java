@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class GameService {
+    public static final int MAX_ROUNDS = 5;
 
     @Inject
     ProductRepository productRepository;
@@ -50,7 +51,7 @@ public class GameService {
             throw new IllegalStateException("No products available. Ensure test data is loaded.");
         }
 
-        Round round = createRound(session, product);
+        Round round = createRound(session, product, 1);
 
         return new StartGameResponse(session.sessionId, round.roundId, product.barcode, product.imageUrl, product.name);
     }
@@ -62,26 +63,42 @@ public class GameService {
             throw new IllegalArgumentException("Game session not found: " + sessionId);
         }
 
-        if (roundRepository.count("session.sessionId", sessionId) >= 5) {
+        long roundCount = roundRepository.count("session.sessionId", sessionId);
+        if (roundCount >= MAX_ROUNDS) {
             throw new IllegalStateException("Maximum rounds reached for this session");
         }
 
-        Product product = productRepository.findRandomFromDb();
-        if (product == null) {
-            throw new IllegalStateException("No products available. Ensure test data is loaded.");
+        long totalProducts = productRepository.count();
+        if (totalProducts == 0) {
+            throw new IllegalStateException("No products available.");
         }
-        Round round = createRound(session, product);
+
+        Product product = getUniqueProduct(sessionId, totalProducts);
+
+        Round round = createRound(session, product, (int) (roundCount + 1));
 
         return new RoundResponse(round.roundId, product.barcode, product.imageUrl, product.name);
     }
 
+    private Product getUniqueProduct(UUID sessionId, long totalProducts) {
+        Product product = productRepository.findRandomFromDb();
+        if (totalProducts > MAX_ROUNDS) {
+            long isDuplicate = roundRepository.count(
+                    "session.sessionId = ?1 AND product.barcode = ?2", sessionId, product.barcode
+            );
 
-    private Round createRound(GameSession session, Product product){
+            if (isDuplicate > 0) {
+                return getUniqueProduct(sessionId, totalProducts);
+            }
+        }
+        return product;
+    }
+
+    private Round createRound(GameSession session, Product product, int roundNumber){
         Round round = new Round();
         round.session = session;
         round.product = product;
-        long count = roundRepository.count("session.sessionId", session.sessionId);
-        round.roundNumber = (int) count + 1;
+        round.roundNumber = roundNumber;
         roundRepository.persist(round);
         return round;
     }
