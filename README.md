@@ -9,6 +9,20 @@ cd frontend
 npm install
 npm run dev
 
+Produkt-Daten laden (per API-Endpunkt):
+# Lädt 50 Produkte (0 → 50)
+curl -X POST http://localhost:8080/api/off/admin/load/50
+
+# Lädt weitere 50 Produkte (50 → 100)
+curl -X POST http://localhost:8080/api/off/admin/load/50
+
+# Mit Suchbegriff (Lädt 30 Pizza-Produkte zusätzlich)
+curl -X POST http://localhost:8080/api/off/admin/load/pizza/30
+
+# Status prüfen
+curl http://localhost:8080/api/off/admin/count
+
+
 ---
 
 ## 1. Administrative Informationen
