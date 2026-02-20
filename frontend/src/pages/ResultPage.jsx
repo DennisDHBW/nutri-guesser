@@ -149,7 +149,7 @@ function ResultPage() {
             )}
             {formattedBetterThan != null && (
               <div className="placement-text">
-                Better than: {formattedBetterThan}%
+                Better than {formattedBetterThan}% of the remaining players
               </div>
             )}
           </div>

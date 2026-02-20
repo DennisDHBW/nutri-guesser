@@ -1,31 +1,82 @@
-# Projektübersicht: Web-Services Gruppenarbeit - "NutriGuesser"
+# NutriGuesser 🍔🥗
 
-Backend starten:
-cd backend
-./mvnw quarkus:dev
-
-Frontend starten:
-cd frontend
-npm install
-npm run dev
-
-Produkt-Daten laden (per API-Endpunkt):
-# Lädt 50 Produkte (0 → 50)
-curl -X POST http://localhost:8080/api/off/admin/load/50
-
-# Lädt weitere 50 Produkte (50 → 100)
-curl -X POST http://localhost:8080/api/off/admin/load/50
-
-# Mit Suchbegriff (Lädt 30 Pizza-Produkte zusätzlich)
-curl -X POST http://localhost:8080/api/off/admin/load/pizza/30
-
-# Status prüfen
-curl http://localhost:8080/api/off/admin/count
-
+**An interactive calorie guessing game for learning about nutrition**
 
 ---
 
-## 1. Administrative Informationen
+## 🚀 Quick Start
+
+### Prerequisites
+- Java 21 JDK
+- Node.js & npm
+- Maven (included via wrapper)
+
+### 1. Start Backend
+```bash
+cd backend
+./mvnw quarkus:dev
+```
+Backend runs on: **http://localhost:8080**
+
+### 2. Start Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Frontend runs on: **http://localhost:5173**
+
+### 3. Load Product Data (Optional)
+```bash
+# Load 50 products (0 → 50)
+curl -X POST http://localhost:8080/api/off/admin/load/50
+
+# Load more products (50 → 100)
+curl -X POST http://localhost:8080/api/off/admin/load/50
+
+# Load products with search term (30 pizza products)
+curl -X POST http://localhost:8080/api/off/admin/load/pizza/30
+
+# Check status
+curl http://localhost:8080/api/off/admin/count
+```
+
+### 4. Play the Game
+Open **http://localhost:5173** in your browser and start guessing calories! 🎮
+
+---
+
+## 📋 Table of Contents
+- [Quick Start](#-quick-start)
+- [Project Overview](#-project-overview)
+- [Administrative Information](#1-administrative-information)
+- [Setup & Installation](#8--setup--installation)
+- [Project Structure](#10--backend-projektstruktur)
+- [Troubleshooting](#12--troubleshooting)
+
+---
+
+## 🎮 Project Overview
+
+**NutriGuesser** is an interactive learning game that raises awareness of the calorie density of foods.
+
+### Game Mechanics
+- 🍕 **Random Food Items:** Products with images are loaded from the OpenFoodFacts API
+- 🎯 **Calorie Estimation:** Players estimate the calorie range (per 100g) - the more accurate, the more points!
+- 📊 **Score Display:** After the game, a score is displayed with a fun cat GIF (via Cataas API) reflecting performance
+- 🏆 **Global Leaderboard:** Top players can immortalize their names on the scoreboard
+
+### Technology Stack
+- **Frontend:** React + Vite
+- **Backend:** Java 21 + Quarkus
+- **Database:** H2 (in-memory)
+- **External APIs:**
+  - 🍎 OpenFoodFacts API (food data)
+  - 🐱 Cataas API (cat images)
+
+---
+
+## 1. Administrative Information
 * **Modul:** Web-Services (Prüfungsleistung)
 * **Studiengang:** Angewandte Informatik
 * **Dozent:** Alexander Auch

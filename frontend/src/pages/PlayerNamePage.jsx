@@ -4,6 +4,8 @@ import { api } from '../services/api';
 import '../styles/PlayerNamePage.css';
 
 function PlayerNamePage() {
+
+  const MAX_NAME_LENGTH = 20;
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -17,8 +19,8 @@ function PlayerNamePage() {
       return;
     }
 
-    if (name.length > 12) {
-      setError('Name must be at most 12 characters long');
+    if (name.length > MAX_NAME_LENGTH) {
+      setError('Name must be at most ' + MAX_NAME_LENGTH + ' characters long');
       return;
     }
 
@@ -61,13 +63,13 @@ function PlayerNamePage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              maxLength={20}
+              maxLength={MAX_NAME_LENGTH}
               className="name-input"
               disabled={loading}
               autoFocus
             />
             <div className="char-counter">
-              {name.length}/20
+              {name.length}/{MAX_NAME_LENGTH}
             </div>
           </div>
 
