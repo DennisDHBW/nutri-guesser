@@ -59,18 +59,17 @@ function ResultPage() {
     if (result?.url) {
       return normalizedResultUrl;
     }
-    if (sessionId) {
-      return `/api/result/image?sessionId=${sessionId}`;
-    }
     return null;
-  }, [normalizedResultUrl, result?.url, sessionId]);
+  }, [normalizedResultUrl, result?.url]);
 
   const [imageSrc, setImageSrc] = useState(catImageUrl);
-  const [imageLoading, setImageLoading] = useState(Boolean(catImageUrl));
+  const [imageLoading, setImageLoading] = useState(false);
 
   useEffect(() => {
-    setImageSrc(catImageUrl);
-    setImageLoading(Boolean(catImageUrl));
+    if (catImageUrl) {
+      setImageSrc(catImageUrl);
+      setImageLoading(true);
+    }
   }, [catImageUrl]);
 
   const formattedBetterThan = useMemo(() => {
