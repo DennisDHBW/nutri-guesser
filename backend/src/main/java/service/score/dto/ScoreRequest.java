@@ -1,4 +1,4 @@
-package client.score.dto;
+package service.score.dto;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;

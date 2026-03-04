@@ -1,8 +1,8 @@
 package service.score;
 
-import client.score.dto.ScoreResponse;
+import service.score.dto.ScoreResponse;
 import jakarta.enterprise.context.ApplicationScoped;
-import client.score.dto.ScoreRequest;
+import service.score.dto.ScoreRequest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import model.Round;
