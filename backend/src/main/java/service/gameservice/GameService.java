@@ -1,8 +1,8 @@
 package service.gameservice;
 
-import client.gameresource.dto.RoundResponse;
-import client.gameresource.dto.StartGameRequest;
-import client.gameresource.dto.StartGameResponse;
+import service.gameservice.dto.RoundResponse;
+import service.gameservice.dto.StartGameRequest;
+import service.gameservice.dto.StartGameResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

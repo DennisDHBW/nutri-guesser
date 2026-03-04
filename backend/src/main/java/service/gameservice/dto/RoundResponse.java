@@ -1,4 +1,4 @@
-package client.gameresource.dto;
+package service.gameservice.dto;
 
 import java.util.UUID;
 

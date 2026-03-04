@@ -1,4 +1,4 @@
-package client.score.dto;
+package service.score.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

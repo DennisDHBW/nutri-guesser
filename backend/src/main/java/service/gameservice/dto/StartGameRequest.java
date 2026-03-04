@@ -1,4 +1,4 @@
-package client.gameresource.dto;
+package service.gameservice.dto;
 
 public record StartGameRequest(
         String nickname
