@@ -55,6 +55,10 @@ public class ResultService {
     private static final int CATAAS_IMAGE_WIDTH = 800;
     private static final int CATAAS_IMAGE_HEIGHT = 800;
 
+    private static final String HTTPS_PROTOCOL = "https://";
+    private static final String DEFAULT_CATAAS_URL = "https://cataas.com";
+    private static final int PROTOCOL_PREFIX_LENGTH = 7;
+
     private static final float TIER2_THRESHOLD = 25.0f;
     private static final float TIER3_THRESHOLD = 50.0f;
     private static final float TIER4_THRESHOLD = 75.0f;
@@ -155,7 +159,9 @@ public class ResultService {
     }
 
     public CataasResponse fetchCatJsonWithText(String tag, String text) {
-        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        int attempt = 0;
+        while (attempt < MAX_ATTEMPTS) {
+            attempt++;
             try {
                 CataasResponse dto = cataasClient.getCatByTagAndText(
                         tag,
@@ -228,8 +234,11 @@ public class ResultService {
 
     private String buildFullUrl(String urlPart) {
         if (urlPart == null) return null;
-        if (urlPart.startsWith("http://") || urlPart.startsWith("https://")) return urlPart;
-        String base = cataasBaseUrl != null ? cataasBaseUrl.replaceAll("/$", "") : "https://cataas.com";
+        if (urlPart.startsWith(HTTPS_PROTOCOL)) return urlPart;
+        if (urlPart.contains("://")) {
+            urlPart = HTTPS_PROTOCOL + urlPart.substring(PROTOCOL_PREFIX_LENGTH);
+        }
+        String base = cataasBaseUrl != null ? cataasBaseUrl.replaceAll("/$", "") : DEFAULT_CATAAS_URL;
         if (!urlPart.startsWith("/")) urlPart = "/" + urlPart;
         return base + urlPart;
     }
