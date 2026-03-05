@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 @ApplicationScoped
@@ -49,70 +50,51 @@ public class ResultService {
     private static final long RETRY_DELAY_MS = 250L;
     private static final String FALLBACK_IMAGE_CLASSPATH = "/static/default-cat.svg";
 
+    private static final int CATAAS_FONT_SIZE = 50;
+    private static final String CATAAS_FONT_COLOR = "red";
+    private static final int CATAAS_IMAGE_WIDTH = 800;
+    private static final int CATAAS_IMAGE_HEIGHT = 800;
+
     private static final float TIER2_THRESHOLD = 25.0f;
     private static final float TIER3_THRESHOLD = 50.0f;
     private static final float TIER4_THRESHOLD = 75.0f;
     private static final float TIER5_THRESHOLD = 90.0f;
 
-    private String[] getTagAndTextForSession(UUID sessionId) {
+    @Transactional
+    void persistGameResult(GameSession session, Integer totalScore) {
+        if (session.endedAt == null) {
+            session.endedAt = LocalDateTime.now();
+        }
 
+        if (totalScore > 0 && leaderboardRepository.findBySession(session) == null) {
+            int placement = leaderboardRepository.getPredictedPlacement(totalScore.longValue());
+
+            LeaderboardEntry entry = new LeaderboardEntry();
+            entry.entryId = UUID.randomUUID();
+            entry.session = session;
+            entry.score = totalScore;
+            entry.achievedAt = LocalDateTime.now();
+            entry.rank = placement;
+            entry.player = session.player;
+            leaderboardRepository.persist(entry);
+        }
+    }
+
+    private String[] getTagAndTextForSession(Integer totalScore) {
+        float percentile = leaderboardRepository.calculatePercentile(totalScore.longValue());
+        ResultTier resultTier = getResultTier(percentile);
+        String tag = getCataasTagForPercentile(resultTier);
+        String text = getCataasTextForPercentile(resultTier);
+        return new String[]{tag, text};
+    }
+
+    public ResultSummary fetchResultResponseForSession(UUID sessionId) {
         if (sessionId == null) {
             throw new IllegalArgumentException("Session ID must be provided");
         }
 
-        long totalPoints = calculateTotalScore(sessionId);
-        float percentile = leaderboardRepository.calculatePercentile(totalPoints);
-        long placement = leaderboardRepository.getPredictedPlacement(totalPoints);
-        ResultTier resultTier = getResultTier(percentile);
-        String tag = getCataasTagForPercentile(resultTier);
-        String text = getCataasTextForPercentile(resultTier);
-
-        if (totalPoints > 0) {
-            GameSession session = gameSessionRepository.findById(sessionId);
-            if (session != null && leaderboardRepository.findBySession(session) == null) {
-                LeaderboardEntry entry = new LeaderboardEntry();
-                entry.entryId = UUID.randomUUID();
-                entry.session = session;
-                entry.score = (int) totalPoints;
-                entry.achievedAt = LocalDateTime.now();
-                entry.rank = (int) placement;
-                entry.player = session.player;
-                leaderboardRepository.persist(entry);
-            }
-        }
-
-        GameSession session = gameSessionRepository.findById(sessionId);
-        if (session == null) {
-            throw new RuntimeException("Game session not found for ID: " + sessionId);
-        }
-        session.endedAt = LocalDateTime.now();
-        gameSessionRepository.persist(session);
-
-        return new String[]{tag, text};
-    }
-
-    @Transactional
-    public CataasResponse fetchCatJsonForSession(UUID sessionId) {
-        String[] tagAndText = getTagAndTextForSession(sessionId);
-        return fetchCatJsonWithText(tagAndText[0], tagAndText[1]);
-    }
-
-    @Transactional
-    public CatImageDTO fetchCatImageForSession(UUID sessionId) {
-        String[] tagAndText = getTagAndTextForSession(sessionId);
-        return fetchCatImageWithText(tagAndText[0], tagAndText[1]);
-    }
-
-    @Transactional
-    public ResultSummary fetchResultResponseForSession(UUID sessionId) {
-        String[] tagAndText = getTagAndTextForSession(sessionId);
-        CataasResponse catResponse = fetchCatJsonWithText(tagAndText[0], tagAndText[1]);
-
-        GameSession session = gameSessionRepository.findById(sessionId);
-        Integer totalScore = calculateTotalScore(sessionId);
-        LeaderboardEntry entry = leaderboardRepository.findBySession(session);
-        Integer rank = entry != null ? entry.rank : null;
-        Float betterThanPercentage = leaderboardRepository.calculatePercentile(totalScore.longValue());
+        ResultData resultData = persistAndFetchResultData(sessionId);
+        CataasResponse catResponse = fetchCatJsonWithText(resultData.tag, resultData.text);
 
         return new ResultSummary(
                 catResponse.id(),
@@ -120,29 +102,75 @@ public class ResultService {
                 catResponse.createdAt(),
                 catResponse.url(),
                 catResponse.mimetype(),
-                rank,
-                totalScore,
-                betterThanPercentage
+                resultData.rank,
+                resultData.totalScore,
+                resultData.betterThanPercentage
         );
     }
 
+    @Transactional
+    ResultData persistAndFetchResultData(UUID sessionId) {
+        GameSession session = requireSession(sessionId);
+        Integer totalScore = calculateTotalScore(session);
+
+        persistGameResult(session, totalScore);
+
+        String[] tagAndText = getTagAndTextForSession(totalScore);
+
+        LeaderboardEntry entry = leaderboardRepository.findBySession(session);
+        Integer rank = entry != null ? entry.rank : null;
+        Float betterThanPercentage = leaderboardRepository.calculatePercentile(totalScore.longValue());
+
+        return new ResultData(tagAndText[0], tagAndText[1], rank, totalScore, betterThanPercentage);
+    }
+
+    private record ResultData(
+            String tag,
+            String text,
+            Integer rank,
+            Integer totalScore,
+            Float betterThanPercentage
+    ) {}
+
+    public CatImageDTO fetchCatImageForSession(UUID sessionId) {
+        if (sessionId == null) {
+            throw new IllegalArgumentException("Session ID must be provided");
+        }
+
+        GameSession session = requireSession(sessionId);
+        Integer totalScore = calculateTotalScore(session);
+        String[] tagAndText = getTagAndTextForSession(totalScore);
+        return fetchCatImageWithText(tagAndText[0], tagAndText[1]);
+    }
+
+    public CataasResponse fetchCatJsonForSession(UUID sessionId) {
+        if (sessionId == null) {
+            throw new IllegalArgumentException("Session ID must be provided");
+        }
+
+        GameSession session = requireSession(sessionId);
+        Integer totalScore = calculateTotalScore(session);
+        String[] tagAndText = getTagAndTextForSession(totalScore);
+        return fetchCatJsonWithText(tagAndText[0], tagAndText[1]);
+    }
+
     public CataasResponse fetchCatJsonWithText(String tag, String text) {
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
                 CataasResponse dto = cataasClient.getCatByTagAndText(
                         tag,
                         text,
                         true,
-                        50,
-                        "red",
-                        800,
-                        800);
+                        CATAAS_FONT_SIZE,
+                        CATAAS_FONT_COLOR,
+                        CATAAS_IMAGE_WIDTH,
+                        CATAAS_IMAGE_HEIGHT);
                 if (dto == null) throw new RuntimeException("Cataas returned null for tag: " + tag + " with text: " + text);
                 return normalize(dto);
             } catch (Exception e) {
-                String msg = "Failed to fetch JSON with text from Cataas (attempt " + (attempt + 1) + ") for tag '" + tag + "' and text '" + text + "': " + e.getMessage();
+                String msg = "Failed to fetch JSON with text from Cataas (attempt " + attempt + ") for tag '" + tag + "' and text '" + text + "': " + e.getMessage();
                 LOG.warning(msg);
-                if (attempt == MAX_RETRIES) {
+                if (attempt == MAX_ATTEMPTS) {
                     return fallbackCatJson(tag, e);
                 }
                 try {
@@ -246,24 +274,24 @@ public class ResultService {
     @Getter
     enum ResultTier {
         TIER_1(
-                Arrays.asList("Sleep", "Sleeping", "Sleepy", "tired", "lazy", "bored", "Grumpy", "Sad", "nap", "Lay", "Bed", "blanket"),
-                Arrays.asList("Not my best...", "Ouch!", "That hurt", "Did I do that?", "What was that?")
+                List.of("Sleep", "Sleeping", "Sleepy", "tired", "lazy", "bored", "Grumpy", "Sad", "nap", "Lay", "Bed", "blanket"),
+                List.of("Not my best...", "Ouch!", "That hurt", "Did I do that?", "What was that?")
         ),
         TIER_2(
-                Arrays.asList("Cute", "Kitten", "kittens", "Baby", "Smol", "tiny", "Fluffy", "floof", "soft", "flower", "pretty", "lovely", "hug", "basket"),
-                Arrays.asList("Pretty good!", "Not bad!", "Getting better!", "Nice try!", "Keep going!")
+                List.of("Cute", "Kitten", "kittens", "Baby", "Smol", "tiny", "Fluffy", "floof", "soft", "flower", "pretty", "lovely", "hug", "basket"),
+                List.of("Pretty good!", "Not bad!", "Getting better!", "Nice try!", "Keep going!")
         ),
         TIER_3(
-                Arrays.asList("Zoomies", "jump", "jumping", "running", "crazy", "Silly", "Funny", "tongue", "blep", "derp", "play", "playing", "attack", "surprised", "shocked", "scream"),
-                Arrays.asList("Amazing!", "Fantastic!", "You rock!", "Impressive!", "Wow!")
+                List.of("Zoomies", "jump", "jumping", "running", "crazy", "Silly", "Funny", "tongue", "blep", "derp", "play", "playing", "attack", "surprised", "shocked", "scream"),
+                List.of("Amazing!", "Fantastic!", "You rock!", "Impressive!", "Wow!")
         ),
         TIER_4(
-                Arrays.asList("sunglasses", "cool", "business", "work", "working", "office", "tie", "Tuxedo", "computer", "laptop", "bossy", "rich", "money", "regal"),
-                Arrays.asList("Business time", "Let's get serious", "Professional mode", "Show time", "All business")
+                List.of("sunglasses", "cool", "business", "work", "working", "office", "tie", "Tuxedo", "computer", "laptop", "bossy", "rich", "money", "regal"),
+                List.of("Business time", "Let's get serious", "Professional mode", "Show time", "All business")
         ),
         TIER_5(
-                Arrays.asList("Meme", "space", "Trippy", "psychedelic", "bread", "loaf", "burrito", "party", "nyan", "nyancat", "food", "chonker", "FAT", "unit", "alien", "glow"),
-                Arrays.asList("LEGENDARY MODE", "ULTIMATE POWER", "UNSTOPPABLE", "ELITE LEVEL", "GODMODE ACTIVATED")
+                List.of("Meme", "space", "Trippy", "psychedelic", "bread", "loaf", "burrito", "party", "nyan", "nyancat", "food", "chonker", "FAT", "unit", "alien", "glow"),
+                List.of("LEGENDARY MODE", "ULTIMATE POWER", "UNSTOPPABLE", "ELITE LEVEL", "GODMODE ACTIVATED")
         );
 
         private final List<String> tags;
@@ -277,7 +305,6 @@ public class ResultService {
     }
 
 
-    private final Random random = new Random();
 
     private ResultTier getResultTier(float percentile) {
         if (percentile >= TIER5_THRESHOLD) {
@@ -293,12 +320,7 @@ public class ResultService {
         }
     }
 
-    private Integer calculateTotalScore(UUID sessionId) {
-
-        GameSession session = gameSessionRepository.findById(sessionId);
-        if (session == null) {
-            throw new IllegalArgumentException("Game session not found.");
-        }
+    private Integer calculateTotalScore(GameSession session) {
         List<Round> rounds = roundRepository.listBySession(session);
         return rounds.stream()
                 .map(round -> round.points)
@@ -307,15 +329,23 @@ public class ResultService {
                 .sum();
     }
 
+    private GameSession requireSession(UUID sessionId) {
+        GameSession session = gameSessionRepository.findById(sessionId);
+        if (session == null) {
+            throw new IllegalArgumentException("Game session not found.");
+        }
+        return session;
+    }
+
     private String getCataasTagForPercentile(ResultTier resultTier) {
         List<String> tierTags = resultTier.getTags();
-        int randomIndex = random.nextInt(tierTags.size());
+        int randomIndex = ThreadLocalRandom.current().nextInt(tierTags.size());
         return tierTags.get(randomIndex);
     }
 
     private String getCataasTextForPercentile(ResultTier resultTier) {
         List<String> tierTexts = resultTier.getTexts();
-        int randomIndex = random.nextInt(tierTexts.size());
+        int randomIndex = ThreadLocalRandom.current().nextInt(tierTexts.size());
         return tierTexts.get(randomIndex);
     }
 
