@@ -24,5 +24,5 @@ public class GameSession extends PanacheEntityBase {
     public LocalDateTime endedAt;
 
     @Column(name = "TOTAL_SCORE", nullable = false)
-    public Integer totalScore = null;
+    public Integer totalScore = 0;
 }

@@ -2,22 +2,16 @@ package service.result;
 
 import client.cataas.CataasClient;
 import client.cataas.dto.CataasResponse;
-import api.result.dto.CatImageDTO;
 import lombok.Getter;
+import service.result.dto.ResultResponseDTO;
 import model.GameSession;
 import model.LeaderboardEntry;
 import model.Round;
 import repository.*;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.inject.Inject;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.io.InputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,10 +24,6 @@ public class ResultService {
     @Inject
     @RestClient
     CataasClient cataasClient;
-
-    @Inject
-    @ConfigProperty(name = "quarkus.rest-client.cataas-api.url")
-    String cataasBaseUrl;
 
     @Inject
     GameSessionRepository gameSessionRepository;
@@ -55,21 +45,20 @@ public class ResultService {
     private static final int CATAAS_IMAGE_WIDTH = 800;
     private static final int CATAAS_IMAGE_HEIGHT = 800;
 
-    private static final String DEFAULT_CATAAS_URL = "https://cataas.com";
-
     private static final float TIER2_THRESHOLD = 25.0f;
     private static final float TIER3_THRESHOLD = 50.0f;
     private static final float TIER4_THRESHOLD = 75.0f;
     private static final float TIER5_THRESHOLD = 90.0f;
 
-    private void persistGameResult(GameSession session, Integer totalScore) {
+    private LeaderboardEntry persistGameResult(GameSession session, Integer totalScore) {
         if (session.endedAt == null) {
             session.endedAt = LocalDateTime.now();
         }
 
         session.totalScore = totalScore;
 
-        if (totalScore > 0 && leaderboardRepository.findBySession(session) == null) {
+        LeaderboardEntry existingEntry = leaderboardRepository.findBySession(session);
+        if (totalScore > 0 && existingEntry == null) {
             int placement = leaderboardRepository.getPredictedPlacement(totalScore.longValue());
 
             LeaderboardEntry entry = new LeaderboardEntry();
@@ -80,7 +69,9 @@ public class ResultService {
             entry.rank = placement;
             entry.player = session.player;
             leaderboardRepository.persist(entry);
+            return entry;
         }
+        return existingEntry;
     }
 
     private String[] getTagAndTextForPercentile(float percentile) {
@@ -90,16 +81,12 @@ public class ResultService {
         return new String[]{tag, text};
     }
 
-    public ResultSummary fetchResultResponseForSession(UUID sessionId) {
+    public ResultResponseDTO fetchResultResponseForSession(UUID sessionId) {
         ResultData resultData = persistAndFetchResultData(sessionId);
         CataasResponse catResponse = fetchCatJsonWithText(resultData.tag, resultData.text);
 
-        return new ResultSummary(
-                catResponse.id(),
-                catResponse.tags(),
-                catResponse.createdAt(),
-                catResponse.url(),
-                catResponse.mimetype(),
+        return new ResultResponseDTO(
+                catResponse,
                 resultData.rank,
                 resultData.totalScore,
                 resultData.betterThanPercentage
@@ -111,12 +98,11 @@ public class ResultService {
         GameSession session = requireSession(sessionId);
         Integer totalScore = calculateTotalScore(session);
 
-        persistGameResult(session, totalScore);
+        LeaderboardEntry entry = persistGameResult(session, totalScore);
 
         Float betterThanPercentage = leaderboardRepository.calculatePercentile(totalScore.longValue());
         String[] tagAndText = getTagAndTextForPercentile(betterThanPercentage);
 
-        LeaderboardEntry entry = leaderboardRepository.findBySession(session);
         Integer rank = entry != null ? entry.rank : null;
 
         return new ResultData(tagAndText[0], tagAndText[1], rank, totalScore, betterThanPercentage);
@@ -130,27 +116,9 @@ public class ResultService {
             Float betterThanPercentage
     ) {}
 
-    public CatImageDTO fetchCatImageForSession(UUID sessionId) {
-        String[] tagAndText = resolveTagAndText(sessionId);
-        return fetchCatImageWithText(tagAndText[0], tagAndText[1]);
-    }
-
-    public CataasResponse fetchCatJsonForSession(UUID sessionId) {
-        String[] tagAndText = resolveTagAndText(sessionId);
-        return fetchCatJsonWithText(tagAndText[0], tagAndText[1]);
-    }
-
-    private String[] resolveTagAndText(UUID sessionId) {
-        GameSession session = requireSession(sessionId);
-        Integer totalScore = calculateTotalScore(session);
-        float percentile = leaderboardRepository.calculatePercentile(totalScore.longValue());
-        return getTagAndTextForPercentile(percentile);
-    }
-
     CataasResponse fetchCatJsonWithText(String tag, String text) {
-        int attempt = 0;
-        while (attempt < MAX_ATTEMPTS) {
-            attempt++;
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
                 CataasResponse dto = cataasClient.getCatByTagAndText(
                         tag,
@@ -163,66 +131,18 @@ public class ResultService {
                 if (dto == null) throw new RuntimeException("Cataas returned null for tag: " + tag + " with text: " + text);
                 return normalize(dto);
             } catch (Exception e) {
+                lastException = e;
                 LOG.warning("Failed to fetch JSON with text from Cataas (attempt " + attempt + ") for tag '" + tag + "' and text '" + text + "': " + e.getMessage());
-                if (attempt == MAX_ATTEMPTS) {
-                    return fallbackCatJson(tag, e);
-                }
-                try {
-                    Thread.sleep(RETRY_DELAY_MS);
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
+                if (attempt < MAX_ATTEMPTS) {
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS);
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         }
-        return fallbackCatJson(tag, new RuntimeException("unreachable"));
-    }
-
-    CatImageDTO fetchCatImageWithText(String tag, String text) {
-        CataasResponse dto = fetchCatJsonWithText(tag, text);
-        byte[] data = fetchCatImageForResponse(tag, text, dto);
-        return new CatImageDTO(data, resolveMimeType(dto));
-    }
-
-    private String resolveMimeType(CataasResponse dto) {
-        if (dto != null && dto.mimetype() != null && dto.mimetype().startsWith("image/")) {
-            return dto.mimetype();
-        }
-        return "image/jpeg";
-    }
-
-    private byte[] fetchCatImageForResponse(String tag, String text, CataasResponse dto) {
-        String urlPart = dto != null ? dto.url() : null;
-        String fullUrl = buildFullUrl(urlPart);
-        if (fullUrl == null || fullUrl.isEmpty()) {
-            String safeText = encodePathSegment(text);
-            fullUrl = buildFullUrl("/cat/" + tag + "/says/" + safeText);
-        }
-
-        try (InputStream in = URI.create(fullUrl).toURL().openStream()) {
-            return in.readAllBytes();
-        } catch (Exception e) {
-            LOG.warning("Failed to fetch image with text from '" + fullUrl + "': " + e.getMessage());
-            return loadDefaultImageBytes();
-        }
-    }
-
-    private String encodePathSegment(String value) {
-        if (value == null || value.isEmpty()) {
-            return "";
-        }
-        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
-    }
-
-    private String buildFullUrl(String urlPart) {
-        if (urlPart == null) return null;
-        if (urlPart.startsWith("https://")) return urlPart;
-        if (urlPart.contains("://")) {
-            int protocolEnd = urlPart.indexOf("://") + 3;
-            urlPart = "https://" + urlPart.substring(protocolEnd);
-        }
-        String base = cataasBaseUrl != null ? cataasBaseUrl.replaceAll("/$", "") : DEFAULT_CATAAS_URL;
-        if (!urlPart.startsWith("/")) urlPart = "/" + urlPart;
-        return base + urlPart;
+        return fallbackCatJson(tag, lastException);
     }
 
     private CataasResponse normalize(CataasResponse dto) {
@@ -242,18 +162,6 @@ public class ResultService {
         );
     }
 
-    private byte[] loadDefaultImageBytes() {
-        try (InputStream in = getClass().getResourceAsStream(FALLBACK_IMAGE_CLASSPATH)) {
-            if (in == null) {
-                LOG.warning("Default cat image not found on classpath: " + FALLBACK_IMAGE_CLASSPATH);
-                return new byte[0];
-            }
-            return in.readAllBytes();
-        } catch (IOException e) {
-            LOG.warning("Failed to load default image: " + e.getMessage());
-            return new byte[0];
-        }
-    }
 
     @Getter
     enum ResultTier {
@@ -285,6 +193,7 @@ public class ResultService {
             this.tags = tags;
             this.texts = texts;
         }
+
     }
 
     private ResultTier getResultTier(float percentile) {
