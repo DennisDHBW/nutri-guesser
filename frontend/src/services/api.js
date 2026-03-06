@@ -59,7 +59,9 @@ export const api = {
 
   // Get game result
   getResult: async (sessionId) => {
-    const response = await fetch(`${API_BASE_URL}/result?sessionId=${sessionId}`);
+    const response = await fetch(`${API_BASE_URL}/result?sessionId=${sessionId}`, {
+      method: 'POST'
+    });
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`Failed to fetch result: ${response.status} - ${error}`);

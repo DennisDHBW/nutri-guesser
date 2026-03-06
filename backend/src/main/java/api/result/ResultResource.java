@@ -8,6 +8,7 @@ import service.result.ResultService;
 import service.result.ResultSummary;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -25,7 +26,7 @@ public class ResultResource {
         this.resultService = resultService;
     }
 
-    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
     public ResultResponseDTO getResultResponse(
             @QueryParam("sessionId") UUID sessionId) {
@@ -47,10 +48,6 @@ public class ResultResource {
     @Produces("image/*")
     public Response getCatImage(
             @QueryParam("sessionId") UUID sessionId) {
-
-        if (sessionId == null) {
-            throw new IllegalArgumentException("Session ID must be provided");
-        }
 
         CatImageDTO imageResult = resultService.fetchCatImageForSession(sessionId);
         return Response.ok(imageResult.data()).type(imageResult.mimeType()).build();
