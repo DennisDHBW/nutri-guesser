@@ -51,6 +51,10 @@ function ResultPage() {
     if (result.url.startsWith('http://') || result.url.startsWith('https://')) {
       return result.url;
     }
+    // Backend-Fallbacks unter /static/... sollen lokal geladen werden.
+    if (result.url.startsWith('/static/')) {
+      return result.url;
+    }
     const base = 'https://cataas.com';
     return `${base}${result.url.startsWith('/') ? '' : '/'}${result.url}`;
   }, [result]);
