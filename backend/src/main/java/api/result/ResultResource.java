@@ -1,13 +1,9 @@
 package api.result;
 
-import api.result.dto.CatImageDTO;
-import api.result.dto.CatResponseDTO;
-import api.result.dto.ResultResponseDTO;
-import api.result.mapper.ResultMapper;
+import service.result.dto.ResultResponseDTO;
 import service.result.ResultService;
-import service.result.ResultSummary;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -25,34 +21,22 @@ public class ResultResource {
         this.resultService = resultService;
     }
 
-    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public ResultResponseDTO getResultResponse(
+    public Response getResultResponse(
             @QueryParam("sessionId") UUID sessionId) {
-        ResultSummary summary = resultService.fetchResultResponseForSession(sessionId);
-        return ResultMapper.toResultResponse(summary);
-    }
-
-    @GET
-    @Path("/cat")
-    @Produces(MediaType.APPLICATION_JSON)
-    public CatResponseDTO getCat(
-            @QueryParam("sessionId") UUID sessionId) {
-        var dto = resultService.fetchCatJsonForSession(sessionId);
-        return ResultMapper.toCatResponse(dto);
-    }
-
-    @GET
-    @Path("/image")
-    @Produces("image/*")
-    public Response getCatImage(
-            @QueryParam("sessionId") UUID sessionId) {
-
         if (sessionId == null) {
-            throw new IllegalArgumentException("Session ID must be provided");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"sessionId query parameter is required\"}")
+                    .build();
         }
-
-        CatImageDTO imageResult = resultService.fetchCatImageForSession(sessionId);
-        return Response.ok(imageResult.data()).type(imageResult.mimeType()).build();
+        try {
+            ResultResponseDTO result = resultService.fetchResultResponseForSession(sessionId);
+            return Response.ok(result).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
     }
 }

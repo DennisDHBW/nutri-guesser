@@ -11,12 +11,6 @@ import jakarta.ws.rs.QueryParam;
 @RegisterRestClient(configKey = "cataas-api")
 public interface CataasClient {
 
-    @GET
-    @Path("/{tag}")
-    CataasResponse getCatByTag(
-            @PathParam("tag") String tag,
-            @QueryParam("json") boolean json
-    );
 
     @GET
     @Path("/{tag}/says/{text}")
