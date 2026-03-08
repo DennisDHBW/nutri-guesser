@@ -174,9 +174,9 @@ function ResultPage() {
         {result?.rank != null && (
           <div className="leaderboard-rank">
             <p>
-              {result.rank <= 10
+              {result.rank <= 100
                 ? `🏆 You are ranked #${result.rank} on the leaderboard!`
-                : 'You did not make the top 10. Try again!'
+                : 'You did not make the top 100. Try again!'
               }
             </p>
           </div>
