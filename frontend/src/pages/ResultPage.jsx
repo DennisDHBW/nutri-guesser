@@ -51,7 +51,6 @@ function ResultPage() {
     if (result.url.startsWith('http://') || result.url.startsWith('https://')) {
       return result.url;
     }
-    // Backend-Fallbacks unter /static/... sollen lokal geladen werden.
     if (result.url.startsWith('/static/')) {
       return result.url;
     }
@@ -88,107 +87,89 @@ function ResultPage() {
 
   if (loading) {
     return (
-      <div className="result-page">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading result...</p>
+        <div className="result-page">
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <p>Loading result...</p>
+          </div>
         </div>
-      </div>
     );
   }
 
   if (error) {
     return (
-      <div className="result-page">
-        <div className="error-container">
-          <h2>Error</h2>
-          <p>{error}</p>
-          <button onClick={handlePlayAgain}>Back to home</button>
+        <div className="result-page">
+          <div className="error-container">
+            <h2>Error</h2>
+            <p>{error}</p>
+            <button onClick={handlePlayAgain}>Back to home</button>
+          </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <div className="result-page">
-      <div className="result-container">
-        <h1 className="result-title">Game over!</h1>
+      <div className="result-page">
+        <div className="result-container">
+          <h1 className="result-title">Game over!</h1>
 
-        {catImageUrl && (
           <div className="cat-image-container">
-            {imageLoading && (
-              <div className="cat-image-loading">
-                <div className="spinner"></div>
-                <span>Loading image...</span>
-              </div>
-            )}
-            {imageSrc && (
-              <img
-                src={imageSrc}
+            <img
+                src={imageSrc || '/static/default-cat.svg'}
                 alt="Cat result"
                 className="cat-image"
                 onLoad={() => setImageLoading(false)}
-                onError={() => {
-                  if (imageSrc && normalizedResultUrl && imageSrc !== normalizedResultUrl) {
-                    setImageSrc(normalizedResultUrl);
-                    setImageLoading(true);
-                    return;
-                  }
+                onError={(e) => {
                   setImageLoading(false);
-                  setImageSrc(null);
+                  e.target.src = '/static/default-cat.svg';
                 }}
-              />
-            )}
+            />
           </div>
-        )}
-        {!imageLoading && imageSrc == null && (
-          <div className="cat-image-fallback">Cat image could not be loaded.</div>
-        )}
 
-        {(result?.rank != null || formattedBetterThan != null) && (
-          <div className="result-placement">
-            {result?.rank != null && (
-              <div className="placement-text">Placement: {result.rank}</div>
-            )}
-            {formattedBetterThan != null && (
-              <div className="placement-text">
-                Better than {formattedBetterThan}% of the remaining players
+          {(result?.rank != null || formattedBetterThan != null) && (
+              <div className="result-placement">
+                {result?.rank != null && (
+                    <div className="placement-text">Placement: {result.rank}</div>
+                )}
+                {formattedBetterThan != null && (
+                    <div className="placement-text">
+                      Better than {formattedBetterThan}% of the remaining players
+                    </div>
+                )}
               </div>
-            )}
+          )}
+
+          <div className="total-score-section">
+            <h2>Your score</h2>
+            <div className="total-score">{result?.totalScore || 0}</div>
+            <div className="score-subtitle">out of 500 max points</div>
           </div>
-        )}
 
-        <div className="total-score-section">
-          <h2>Your score</h2>
-          <div className="total-score">{result?.totalScore || 0}</div>
-          <div className="score-subtitle">out of 500 max points</div>
-        </div>
+          {result?.rounds && result.rounds.length > 0 && (
+              <div className="rounds-overview">
+                <h3>Round overview</h3>
+                <RoundHistory rounds={result.rounds} showDetails={true} />
+              </div>
+          )}
 
-        {result?.rounds && result.rounds.length > 0 && (
-          <div className="rounds-overview">
-            <h3>Round overview</h3>
-            <RoundHistory rounds={result.rounds} showDetails={true} />
+          {result?.rank != null && (
+              <div className="leaderboard-rank">
+                <p>
+                  {result.rank <= 100
+                      ? `🏆 You are ranked #${result.rank} on the leaderboard!`
+                      : 'You did not make the top 100. Try again!'
+                  }
+                </p>
+              </div>
+          )}
+
+          <div className="result-actions">
+            <button className="play-again-button" onClick={handlePlayAgain}>
+              Play again
+            </button>
           </div>
-        )}
-
-        {result?.rank != null && (
-          <div className="leaderboard-rank">
-            <p>
-              {result.rank <= 100
-                ? `🏆 You are ranked #${result.rank} on the leaderboard!`
-                : 'You did not make the top 100. Try again!'
-              }
-            </p>
-          </div>
-        )}
-
-        <div className="result-actions">
-          <button className="play-again-button" onClick={handlePlayAgain}>
-            Play again
-          </button>
         </div>
       </div>
-    </div>
   );
 }
 

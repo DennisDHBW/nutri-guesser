@@ -38,7 +38,7 @@ public class ResultService {
     private static final int MAX_RETRIES = 2;
     private static final int MAX_ATTEMPTS = MAX_RETRIES + 1;
     private static final long RETRY_DELAY_MS = 250L;
-    private static final String FALLBACK_IMAGE_CLASSPATH = "/static/default-cat.svg";
+    private static final String FALLBACK_IMAGE_CLASSPATH = "/frontend/src/static/default-cat.svg";
 
     private static final int CATAAS_FONT_SIZE = 50;
     private static final String CATAAS_FONT_COLOR = "red";
