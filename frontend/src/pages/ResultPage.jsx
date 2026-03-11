@@ -66,14 +66,34 @@ function ResultPage() {
   }, [normalizedResultUrl, result?.url]);
 
   const [imageSrc, setImageSrc] = useState(catImageUrl);
-  const [imageLoading, setImageLoading] = useState(false);
+  const [imageRetried, setImageRetried] = useState(false);
 
   useEffect(() => {
     if (catImageUrl) {
       setImageSrc(catImageUrl);
-      setImageLoading(true);
+      setImageRetried(false);
     }
   }, [catImageUrl]);
+
+  const retryCatImage = async () => {
+    try {
+      const freshData = await api.getResult(sessionId);
+      if (freshData?.url) {
+        let newUrl = freshData.url;
+        if (!newUrl.startsWith('http://') && !newUrl.startsWith('https://') && !newUrl.startsWith('/static/')) {
+          newUrl = `https://cataas.com${newUrl.startsWith('/') ? '' : '/'}${newUrl}`;
+        }
+        setImageSrc(newUrl);
+        // Update cache with fresh data
+        sessionStorage.setItem(`result_${sessionId}`, JSON.stringify(freshData));
+      } else {
+        setImageSrc('/static/default-cat.svg');
+      }
+    } catch (err) {
+      console.error('Retry cat image failed:', err);
+      setImageSrc('/static/default-cat.svg');
+    }
+  };
 
   const formattedBetterThan = useMemo(() => {
     if (result?.betterThanPercentage == null || Number.isNaN(Number(result.betterThanPercentage))) {
@@ -118,10 +138,13 @@ function ResultPage() {
                 src={imageSrc || '/static/default-cat.svg'}
                 alt="Cat result"
                 className="cat-image"
-                onLoad={() => setImageLoading(false)}
-                onError={(e) => {
-                  setImageLoading(false);
-                  e.target.src = '/static/default-cat.svg';
+                onError={() => {
+                  if (!imageRetried) {
+                    setImageRetried(true);
+                    retryCatImage();
+                  } else {
+                    setImageSrc('/static/default-cat.svg');
+                  }
                 }}
             />
           </div>
