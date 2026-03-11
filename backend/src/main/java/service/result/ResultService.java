@@ -74,16 +74,20 @@ public class ResultService {
         return existingEntry;
     }
 
-    private String[] getTagAndTextForPercentile(float percentile) {
+    private ResultTierSelection getTagAndTextForPercentile(float percentile) {
         ResultTier resultTier = getResultTier(percentile);
-        String tag = getRandomElement(resultTier.getTags());
+        List<String> shuffledTags = new ArrayList<>(resultTier.getTags());
+        Collections.shuffle(shuffledTags);
+        String tag = shuffledTags.getFirst();
         String text = getRandomElement(resultTier.getTexts());
-        return new String[]{tag, text};
+        return new ResultTierSelection(tag, text, shuffledTags);
     }
+
+    private record ResultTierSelection(String tag, String text, List<String> alternativeTags) {}
 
     public ResultResponseDTO fetchResultResponseForSession(UUID sessionId) {
         ResultData resultData = persistAndFetchResultData(sessionId);
-        CataasResponse catResponse = fetchCatJsonWithText(resultData.tag, resultData.text);
+        CataasResponse catResponse = fetchCatJsonWithText(resultData.tag, resultData.text, resultData.alternativeTags);
 
         return new ResultResponseDTO(
                 catResponse,
@@ -101,38 +105,49 @@ public class ResultService {
         LeaderboardEntry entry = persistGameResult(session, totalScore);
 
         Float betterThanPercentage = leaderboardRepository.calculatePercentile(totalScore.longValue());
-        String[] tagAndText = getTagAndTextForPercentile(betterThanPercentage);
+        ResultTierSelection selection = getTagAndTextForPercentile(betterThanPercentage);
 
         Integer rank = entry != null ? entry.rank : null;
 
-        return new ResultData(tagAndText[0], tagAndText[1], rank, totalScore, betterThanPercentage);
+        return new ResultData(selection.tag, selection.text, selection.alternativeTags, rank, totalScore, betterThanPercentage);
     }
 
     private record ResultData(
             String tag,
             String text,
+            List<String> alternativeTags,
             Integer rank,
             Integer totalScore,
             Float betterThanPercentage
     ) {}
 
-    CataasResponse fetchCatJsonWithText(String tag, String text) {
+    CataasResponse fetchCatJsonWithText(String tag, String text, List<String> alternativeTags) {
+        List<String> tagsToTry = new ArrayList<>();
+        tagsToTry.add(tag);
+        for (String alt : alternativeTags) {
+            if (!alt.equals(tag) && !tagsToTry.contains(alt)) {
+                tagsToTry.add(alt);
+            }
+            if (tagsToTry.size() >= MAX_ATTEMPTS) break;
+        }
+
         Exception lastException = null;
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            String currentTag = tagsToTry.get(Math.min(attempt - 1, tagsToTry.size() - 1));
             try {
                 CataasResponse dto = cataasClient.getCatByTagAndText(
-                        tag,
+                        currentTag,
                         text,
                         true,
                         CATAAS_FONT_SIZE,
                         CATAAS_FONT_COLOR,
                         CATAAS_IMAGE_WIDTH,
                         CATAAS_IMAGE_HEIGHT);
-                if (dto == null) throw new RuntimeException("Cataas returned null for tag: " + tag + " with text: " + text);
+                if (dto == null) throw new RuntimeException("Cataas returned null for tag: " + currentTag + " with text: " + text);
                 return normalize(dto);
             } catch (Exception e) {
                 lastException = e;
-                LOG.warning("Failed to fetch JSON with text from Cataas (attempt " + attempt + ") for tag '" + tag + "' and text '" + text + "': " + e.getMessage());
+                LOG.warning("Failed to fetch JSON with text from Cataas (attempt " + attempt + ") for tag '" + currentTag + "' and text '" + text + "': " + e.getMessage());
                 if (attempt < MAX_ATTEMPTS) {
                     try {
                         Thread.sleep(RETRY_DELAY_MS);
